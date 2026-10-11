@@ -95,3 +95,17 @@ test("Pearson correlation: perfect, inverse and undefined cases", () => {
   // hand-computed: x=[1,2,3], y=[1,3,2] -> r = 0.5
   close(M.pearson([1, 2, 3], [1, 3, 2]), 0.5);
 });
+
+test("scoreScale: item reversal and plain mean", () => {
+  const r = M.scoreScale([5, 1, 5], 5, [2], null); // item 2 reversed -> 5
+  close(r.mean, 5);
+  assert.equal(r.subscores, null);
+});
+
+test("scoreScale: subscales, with a reversed subscale in the total", () => {
+  // items 1-2 = A, items 3-4 = B (reverse). A mean 4, B mean 2 -> total = (4 + (6-2)) / 2 = 4
+  const r = M.scoreScale([4, 4, 2, 2], 5, [], [{ name: "A", items: [1, 2] }, { name: "B", items: [3, 4], reverse: true }]);
+  close(r.subscores.A, 4);
+  close(r.subscores.B, 2);
+  close(r.mean, 4);
+});

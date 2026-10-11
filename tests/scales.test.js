@@ -30,3 +30,13 @@ test("every filled-in scale is well formed", () => {
     for (const r of s.reversed) assert.ok(r >= 1 && r <= s.items.length, `${s.id}: reversed item ${r} out of range`);
   }
 });
+
+test("subscales cover every item exactly once", () => {
+  const ctx = { window: {} };
+  vm.runInNewContext(src, ctx);
+  for (const s of ctx.window.AM_SCALES) {
+    if (!s.subscales || !s.items.length) continue;
+    const all = s.subscales.flatMap(x => x.items).sort((a, b) => a - b);
+    assert.deepEqual(all, s.items.map((_, i) => i + 1), `${s.id}: subscale items must cover 1..${s.items.length} once each`);
+  }
+});

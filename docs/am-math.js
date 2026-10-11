@@ -87,7 +87,17 @@ const AMMath = (() => {
     for (let i=0;i<n;i++){ const dx = x[i]-mx, dy = y[i]-my; sxy += dx*dy; sxx += dx*dx; syy += dy*dy; }
     return (sxx > 0 && syy > 0) ? sxy/Math.sqrt(sxx*syy) : NaN;
   }
-  return { mean, median, brier, calibration, betaPost, logistic, smaa, pearson };
+  // Score a questionnaire: reverse the listed items, then either one mean or subscale means.
+  // A subscale marked reverse counts as (max + 1 - its mean) in the total.
+  function scoreScale(resp, max, reversed, subscales){
+    const rev = new Set((reversed || []).map(Number));
+    const scored = resp.map((v,i) => rev.has(i+1) ? (max+1-v) : v);
+    if (!subscales || !subscales.length) return { mean: mean(scored), subscores: null };
+    const subscores = {};
+    const parts = subscales.map(s => { const m = mean(s.items.map(n => scored[n-1])); subscores[s.name] = m; return s.reverse ? (max+1-m) : m; });
+    return { mean: mean(parts), subscores };
+  }
+  return { mean, median, brier, calibration, betaPost, logistic, smaa, pearson, scoreScale };
 })();
 if (typeof module === "object" && module.exports) module.exports = AMMath; else root.AMMath = AMMath;
 })(typeof window !== "undefined" ? window : globalThis);

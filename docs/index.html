@@ -818,11 +818,10 @@ async function submitScale(){
   const s = allScales().find(x => ui.q && x.id === ui.q.id); if (!s) return;
   const resp = [];
   for (let i=0;i<s.items.length;i++){ const r = document.querySelector(`input[name="sc-${i}"]:checked`); if (!r) { toast("Answer every item first"); return; } resp.push(+r.value); }
-  const rev = new Set((s.reversed||[]).map(Number));
-  const scored = resp.map((v,i) => rev.has(i+1) ? (s.max+1-v) : v);
-  const mean = scored.reduce((x,y)=>x+y,0)/scored.length;
-  const rec = { id:uid(), at:new Date().toISOString(), kind:ui.q.kind, scaleId:s.id, name:s.name, responses:resp, mean:Math.round(mean*100)/100 };
-  try { await save("scales", rec); ui.q = null; ui.qRunSig = ""; toast("Saved, mean "+rec.mean); renderStudy(); } catch {}
+  const sc = M.scoreScale(resp, s.max, s.reversed, s.subscales), r2 = x => Math.round(x*100)/100;
+  const rec = { id:uid(), at:new Date().toISOString(), kind:ui.q.kind, scaleId:s.id, name:s.name, responses:resp, mean:r2(sc.mean),
+    subscores: sc.subscores ? Object.fromEntries(Object.entries(sc.subscores).map(([k,v]) => [k, r2(v)])) : null };
+  try { await save("scales", rec); ui.q = null; ui.qRunSig = null; toast(rec.subscores ? "Saved, total "+rec.mean : "Saved, mean "+rec.mean); renderStudy(); } catch {}
 }
 async function saveSetup(id){
   const box = document.querySelector(`[data-setup="${id}"]`); if (!box) return;
@@ -1345,7 +1344,7 @@ function renderStudy(){
         <div class="row"><button class="btn primary" data-qsubmit="1">Save answers</button><button class="btn" data-qcancel="1">Cancel</button></div></div>`;
     } else $("qRun").innerHTML = "";
   }
-  $("scaleHistory").innerHTML = hist.length ? `<h3>Your scores</h3><p class="meta">${hist.map(r => `<span>${esc(r.name)} · ${esc(r.kind)} ${esc(fmtTime(r.at))}: ${r.mean}</span>`).join("")}</p>` : "";
+  $("scaleHistory").innerHTML = hist.length ? `<h3>Your scores</h3><p class="meta">${hist.map(r => `<span>${esc(r.name)} · ${esc(r.kind)} ${esc(fmtTime(r.at))}: ${r.subscores ? "total " : ""}${r.mean}${r.subscores ? " (" + Object.entries(r.subscores).map(([k,v]) => esc(k)+" "+v).join(", ") + ")" : ""}</span>`).join("")}</p>` : "";
   $("dataCounts").textContent = `${state.intentions.length} intentions · ${state.checkins.length} check-ins · ${state.episodes.length} stuck episodes (${state.episodes.filter(e=>e.followup).length} followed up) · ${state.scales.length} questionnaires`;
 }
 
