@@ -4,7 +4,7 @@
 
 People usually know what they mean to do far better than they do it. AI coaches are increasingly offered as the fix, and most of them hand out answers. Agency Mirror tests a different idea. When you stall, does being *asked questions* help you start as often as being *told what to do*, while leaving the decision feeling like yours? And how often do people give up on the questions and ask to be told?
 
-**[Try the live app](https://YOUR-USERNAME.github.io/agency-mirror/)**. It runs entirely in your browser, with no account, and nothing leaves your device unless you export it.
+**[Try the live app](https://polaris424242.github.io/agency-mirror/)**. It runs entirely in your browser, with no account, and nothing leaves your device unless you export it.
 
 ## What it does
 
