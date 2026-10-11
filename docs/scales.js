@@ -17,8 +17,18 @@ window.AM_SCALES = [
     cite: "Steel (2010). Items as reprinted in Svartdal & Steel (2017), Frontiers in Psychology 8:1927, Table 1 (open access, CC BY).",
     url: "https://www.frontiersin.org/articles/10.3389/fpsyg.2017.01927/pdf",
     low: "", high: "",
-    items: [],
-    reversed: []
+    items: [
+      "I put things off so long that my well-being or efficiency unnecessarily suffers",
+      "If there is something I should do, I get to it before attending to lesser tasks",
+      "My life would be better if I did some activities or tasks earlier",
+      "When I should be doing one thing, I will do another",
+      "At the end of the day, I know I could have spent the time better",
+      "I spend my time wisely",
+      "I delay tasks beyond what is reasonable",
+      "I procrastinate",
+      "I do everything when I believe it needs to be done"
+    ],
+    reversed: [2, 6, 9]
   },
   {
     id: "pps",

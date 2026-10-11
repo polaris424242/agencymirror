@@ -826,11 +826,18 @@ async function submitScale(){
 }
 async function saveSetup(id){
   const box = document.querySelector(`[data-setup="${id}"]`); if (!box) return;
-  const items = box.querySelector(".su-items").value.split("\n").map(x => x.trim()).filter(Boolean);
+  // tidy pasted lines: drop leading labels like "IPS (1)", "1." or "1)", and read a trailing "(R)" as reverse-scored
+  const autoRev = [];
+  const items = box.querySelector(".su-items").value.split("\n").map(x => x.trim()).filter(Boolean).map((x, i) => {
+    let t = x.replace(/^[A-Za-z]{2,6}\s*\(\d+\)\s*/, "").replace(/^\(?\d+[.)]\s+/, "");
+    if (/\(R\)\s*$/i.test(t)) { autoRev.push(i+1); t = t.replace(/\s*\(R\)\s*$/i, ""); }
+    return t;
+  });
   if (!items.length) { toast("Paste the items first, one per line"); return; }
   const s = allScales().find(x => x.id===id);
   if (s && s.nItems && items.length !== s.nItems && !box.dataset.warned) { box.dataset.warned = "1"; toast(`That's ${items.length} items; the source has ${s.nItems}. Press Save again to keep it anyway.`); return; }
-  const reversed = box.querySelector(".su-rev").value.split(/[^0-9]+/).map(Number).filter(n => n>=1 && n<=items.length);
+  const typed = box.querySelector(".su-rev").value.split(/[^0-9]+/).map(Number).filter(n => n>=1 && n<=items.length);
+  const reversed = [...new Set([...typed, ...autoRev])].sort((a,b) => a-b);
   const p = {...(state.profile||{})};
   p.scaleItems = {...(p.scaleItems||{}), [id]:{ items, reversed, low:box.querySelector(".su-low").value.trim(), high:box.querySelector(".su-high").value.trim() }};
   try { await store.setProfile(p); ui.qSig = ""; toast("Saved. It's ready to take."); } catch { toast("Couldn't save"); }
