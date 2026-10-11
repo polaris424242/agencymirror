@@ -15,6 +15,8 @@ People usually know what they mean to do far better than they do it. AI coaches 
 | **Check-ins** | Mood and energy sliders, a precise feeling word, an optional metaphor | Emotional granularity, mood and agency over time |
 | **Patterns** | Read your own data | Stated vs revealed drivers of follow-through (logistic regression), track record per kind of task (Beta–Bernoulli) |
 | **Decide** | One-off decisions: objectives, weight *ranges*, ratings, your gut call | Win rates across 4,000 weightings (SMAA), the pivotal objective, gut vs model |
+| **Questionnaires** | Built-in library (Irrational and Pure Procrastination Scales, Index of Autonomous Functioning) plus your own; paste items once, take at baseline, weekly and at the end | Mean scores with reverse-scoring |
+| **Skin (optional)** | Daily worst itch, itch-disturbed sleep, flares, medication changes | Same-day and next-day correlation of mood with itch (single-person sub-study) |
 | **Commitments** | Optional pledge, partner or stake; release takes 24 hours | Follow-through with and without commitment, and whether reliance on commitments falls |
 
 Every statistic has a "The math, step by step" panel in the app.

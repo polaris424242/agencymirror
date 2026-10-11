@@ -87,3 +87,11 @@ test("Rank acceptabilities sum to one for every option", () => {
 test("Median of an even-length list averages the middle pair", () => {
   assert.equal(M.median([3, 1, 2, 10]), 2.5);
 });
+
+test("Pearson correlation: perfect, inverse and undefined cases", () => {
+  close(M.pearson([1, 2, 3, 4], [2, 4, 6, 8]), 1);
+  close(M.pearson([1, 2, 3, 4], [8, 6, 4, 2]), -1);
+  assert.ok(Number.isNaN(M.pearson([1, 1, 1], [1, 2, 3])));
+  // hand-computed: x=[1,2,3], y=[1,3,2] -> r = 0.5
+  close(M.pearson([1, 2, 3], [1, 3, 2]), 0.5);
+});

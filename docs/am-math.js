@@ -80,7 +80,14 @@ const AMMath = (() => {
     const midScore = options.map((_,o) => criteria.reduce((a,_c,c) => a + (mid[c]/mt)*(+scores[o][c]||0), 0));
     return { used, winPct, rankPct:rank.map(r=>r.map(x=>x/used)), winner, pivot, midScore };
   }
-  return { mean, median, brier, calibration, betaPost, logistic, smaa };
+  function pearson(x, y){
+    const n = Math.min(x.length, y.length); if (n < 2) return NaN;
+    const mx = mean(x.slice(0,n)), my = mean(y.slice(0,n));
+    let sxy = 0, sxx = 0, syy = 0;
+    for (let i=0;i<n;i++){ const dx = x[i]-mx, dy = y[i]-my; sxy += dx*dy; sxx += dx*dx; syy += dy*dy; }
+    return (sxx > 0 && syy > 0) ? sxy/Math.sqrt(sxx*syy) : NaN;
+  }
+  return { mean, median, brier, calibration, betaPost, logistic, smaa, pearson };
 })();
 if (typeof module === "object" && module.exports) module.exports = AMMath; else root.AMMath = AMMath;
 })(typeof window !== "undefined" ? window : globalThis);

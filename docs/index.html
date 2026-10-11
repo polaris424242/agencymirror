@@ -251,6 +251,23 @@ table.grid td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-s
         <label for="ciImage" style="flex:2 1 220px">An image or metaphor for it (optional)
           <input type="text" id="ciImage" maxlength="160" autocomplete="off" placeholder="e.g. like walking through wet sand"></label>
       </div>
+      <details class="commit" id="skinBox">
+        <summary>Skin today (optional)</summary>
+        <p class="hint">For the skin and stress sub-study. Record it once a day at about the same time. Leave this closed to skip it.</p>
+        <div class="row">
+          <div class="scale"><label for="itch"><span>Worst itch in the last 24 hours <span class="readout" id="itchOut">0</span>/10</span></label>
+            <input type="range" id="itch" min="0" max="10" step="1" value="0">
+            <div class="ends"><span>none</span><span>worst imaginable</span></div></div>
+          <div class="scale"><label for="itchSleep"><span>Sleep disturbed by itch <span class="readout" id="itchSleepOut">0</span>/10</span></label>
+            <input type="range" id="itchSleep" min="0" max="10" step="1" value="0">
+            <div class="ends"><span>not at all</span><span>completely</span></div></div>
+        </div>
+        <div class="row">
+          <label for="flare">Flare today
+            <select id="flare"><option value="none">No flare</option><option value="mild">Mild flare</option><option value="flare">Clear flare</option></select></label>
+          <label for="medChange" style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="medChange"> Any medication or dose change today</label>
+        </div>
+      </details>
       <div class="row">
         <label for="ciDoing">What I'm doing now
           <select id="ciDoing"></select></label>
@@ -368,6 +385,16 @@ range    ≈ estimate ± 1.28 × spread   (about 80%, approximate)</div>
     </div>
 
     <div class="sheet">
+      <h3>Skin and mood</h3>
+      <div id="skinStats"></div>
+      <details class="math"><summary>The math: same-day and next-day correlation</summary>
+        <p>Each day gets one mood value, the average of that day's mood check-ins (−3 to +3), and one itch value, the worst itch you recorded that day (0–10). The Pearson correlation <em>r</em> runs from −1 to +1:</p>
+        <div class="formula">r = Σ (xᵢ − x̄)(yᵢ − ȳ) ÷ √( Σ (xᵢ − x̄)² × Σ (yᵢ − ȳ)² )</div>
+        <p>"Same day" pairs mood and itch from the same date. "Next day" pairs today's mood with tomorrow's itch. If stress feeds flares, the next-day link is the one to watch. Both are correlations within one person, not proof of cause. Sleep, weather, sweat, allergens and especially medication changes can drive both, which is why medication changes are logged. Read anything under about 14 paired days as noise.</p>
+      </details>
+    </div>
+
+    <div class="sheet">
       <h3>Commitments</h3>
       <div id="commitStats"></div>
       <details class="math"><summary>How to read this</summary>
@@ -395,18 +422,15 @@ range    ≈ estimate ± 1.28 × spread   (about 80%, approximate)</div>
   <section class="panel" id="panel-study" role="tabpanel" hidden>
     <div class="sheet prose">
       <h2>Questionnaires</h2>
-      <p>Paste the items of a validated scale, one per line. Mark reverse-scored items with <code>(R)</code> at the end. Take it once at the start (baseline) and once a week.</p>
-      <label for="scaleName">Scale name
-        <input type="text" id="scaleName" maxlength="60" placeholder="e.g. Pure Procrastination Scale"></label>
-      <label for="scaleItems">Items
-        <textarea id="scaleItems" style="min-height:140px"></textarea></label>
-      <div class="row">
-        <label for="scaleAnchors">Response range
-          <select id="scaleAnchors"><option value="5">1–5</option><option value="7">1–7</option></select></label>
-        <button class="btn" id="saveScale">Save items</button>
-      </div>
-      <div id="scaleRun"></div>
+      <p>Take each one at the start (baseline), then as listed. Your scores are stored with your other entries and included in the JSON export.</p>
+      <div id="qList" style="display:grid;gap:12px"></div>
+      <div id="qRun"></div>
       <div id="scaleHistory"></div>
+      <details class="math"><summary>Add your own questionnaire</summary>
+        <div class="row"><label for="cqName">Name<input type="text" id="cqName" maxlength="60"></label>
+          <label for="cqMax">Response range<select id="cqMax"><option value="5">1–5</option><option value="7">1–7</option></select></label></div>
+        <div class="row"><button class="btn small" id="cqAdd">Add</button></div>
+      </details>
     </div>
 
     <div class="sheet prose">
@@ -435,6 +459,7 @@ range    ≈ estimate ± 1.28 × spread   (about 80%, approximate)</div>
 <div class="toast" id="toast" hidden></div>
 
 <script src="am-math.js"></script>
+<script src="scales.js"></script>
 <script>
 (() => {
 "use strict";
@@ -643,12 +668,16 @@ $("wordChips").addEventListener("click", e => {
   ui.word = ui.word===b.dataset.word ? null : b.dataset.word; renderWords();
 });
 renderWords();
+for (const [id,out] of [["itch","itchOut"],["itchSleep","itchSleepOut"]]) $(id).addEventListener("input", () => $(out).textContent = $(id).value);
+try { if (localStorage.getItem("am-skin")==="1") $("skinBox").open = true; } catch {}
+$("skinBox").addEventListener("toggle", () => { try { localStorage.setItem("am-skin", $("skinBox").open ? "1" : "0"); } catch {} });
 $("ciBtn").addEventListener("click", async () => {
   const own = $("ciWord").value.trim().toLowerCase();
   const c = { id:uid(), at:new Date().toISOString(), valence:+$("valence").value, arousal:+$("arousal").value, agency:+$("agency").value,
     word: own || ui.word || "", image:$("ciImage").value.trim(),
+    skin: $("skinBox").open ? { itch:+$("itch").value, sleep:+$("itchSleep").value, flare:$("flare").value, medChange:$("medChange").checked } : null,
     intentionId:$("ciDoing").value || null, note:$("ciNote").value.trim() };
-  try { await save("checkins", c); $("ciNote").value=""; $("ciWord").value=""; $("ciImage").value=""; ui.word=null; renderWords(); toast("Check-in saved"); } catch {}
+  try { await save("checkins", c); $("ciNote").value=""; $("ciWord").value=""; $("medChange").checked=false; $("ciImage").value=""; ui.word=null; renderWords(); toast("Check-in saved"); } catch {}
 });
 
 /* ---------- stuck ---------- */
@@ -776,20 +805,52 @@ async function answerFollowup(id){
 }
 
 /* ---------- scales ---------- */
-$("saveScale").addEventListener("click", async () => {
-  const items = $("scaleItems").value.split("\n").map(s=>s.trim()).filter(Boolean);
-  if (!items.length) { toast("Paste at least one item"); return; }
-  const p = {...state.profile, scale:{ name:$("scaleName").value.trim() || "Questionnaire", items, max:+$("scaleAnchors").value }};
-  try { await store.setProfile(p); toast("Items saved"); } catch { toast("Couldn't save"); }
-});
-async function submitScale(kind){
-  const sc = state.profile.scale; const resp = [];
-  for (let i=0;i<sc.items.length;i++){ const r = document.querySelector(`input[name="sc-${i}"]:checked`); if (!r){ toast("Answer every item first"); return; } resp.push(+r.value); }
-  const scored = resp.map((v,i) => /\(R\)\s*$/.test(sc.items[i]) ? (sc.max+1-v) : v);
-  const mean = scored.reduce((a,b)=>a+b,0)/scored.length;
-  const rec = { id:uid(), at:new Date().toISOString(), kind, name:sc.name, responses:resp, mean:Math.round(mean*100)/100 };
-  try { await save("scales", rec); toast("Saved, mean "+rec.mean); } catch {}
+const LIB = window.AM_SCALES || [];
+function allScales(){
+  const prof = state.profile || {}, over = prof.scaleItems || {};
+  const custom = (prof.customScales || []).map(c => ({...c, custom:true}));
+  const old = prof.scale && prof.scale.items && prof.scale.items.length ? [{ id:"legacy", name:prof.scale.name, max:prof.scale.max, custom:true, when:"",
+    items:prof.scale.items.map(x => x.replace(/\s*\(R\)\s*$/,"")), reversed:prof.scale.items.map((x,i) => /\(R\)\s*$/.test(x) ? i+1 : 0).filter(Boolean) }] : [];
+  return [...LIB, ...custom, ...old].map(s => { const o = over[s.id]; return o && o.items && o.items.length ? {...s, ...o, fromProfile:true} : s; });
 }
+const ready = s => Array.isArray(s.items) && s.items.length > 0;
+async function submitScale(){
+  const s = allScales().find(x => ui.q && x.id === ui.q.id); if (!s) return;
+  const resp = [];
+  for (let i=0;i<s.items.length;i++){ const r = document.querySelector(`input[name="sc-${i}"]:checked`); if (!r) { toast("Answer every item first"); return; } resp.push(+r.value); }
+  const rev = new Set((s.reversed||[]).map(Number));
+  const scored = resp.map((v,i) => rev.has(i+1) ? (s.max+1-v) : v);
+  const mean = scored.reduce((x,y)=>x+y,0)/scored.length;
+  const rec = { id:uid(), at:new Date().toISOString(), kind:ui.q.kind, scaleId:s.id, name:s.name, responses:resp, mean:Math.round(mean*100)/100 };
+  try { await save("scales", rec); ui.q = null; ui.qRunSig = ""; toast("Saved, mean "+rec.mean); renderStudy(); } catch {}
+}
+async function saveSetup(id){
+  const box = document.querySelector(`[data-setup="${id}"]`); if (!box) return;
+  const items = box.querySelector(".su-items").value.split("\n").map(x => x.trim()).filter(Boolean);
+  if (!items.length) { toast("Paste the items first, one per line"); return; }
+  const s = allScales().find(x => x.id===id);
+  if (s && s.nItems && items.length !== s.nItems && !box.dataset.warned) { box.dataset.warned = "1"; toast(`That's ${items.length} items; the source has ${s.nItems}. Press Save again to keep it anyway.`); return; }
+  const reversed = box.querySelector(".su-rev").value.split(/[^0-9]+/).map(Number).filter(n => n>=1 && n<=items.length);
+  const p = {...(state.profile||{})};
+  p.scaleItems = {...(p.scaleItems||{}), [id]:{ items, reversed, low:box.querySelector(".su-low").value.trim(), high:box.querySelector(".su-high").value.trim() }};
+  try { await store.setProfile(p); ui.qSig = ""; toast("Saved. It's ready to take."); } catch { toast("Couldn't save"); }
+}
+async function copySetup(id){
+  const s = allScales().find(x => x.id===id); if (!s) return;
+  const text = JSON.stringify({ id:s.id, items:s.items, reversed:s.reversed||[], low:s.low||"", high:s.high||"" }, null, 2);
+  try { await navigator.clipboard.writeText(text); toast("Copied. Paste it over this entry in docs/scales.js"); }
+  catch { const t = document.createElement("textarea"); t.value = text; t.readOnly = true; t.style.minHeight = "140px"; $("qRun").prepend(t); t.select(); toast("Select and copy the text shown"); }
+}
+async function clearSetup(id){
+  const p = {...(state.profile||{})}; const o = {...(p.scaleItems||{})}; delete o[id]; p.scaleItems = o;
+  try { await store.setProfile(p); ui.qSig = ""; toast("Items removed"); } catch { toast("Couldn't save"); }
+}
+$("cqAdd").addEventListener("click", async () => {
+  const name = $("cqName").value.trim(); if (!name) { toast("Name it first"); return; }
+  const p = {...(state.profile||{})};
+  p.customScales = [...(p.customScales||[]), { id:"c-"+uid().replace(/-/g,"").slice(0,8), name, max:+$("cqMax").value, items:[], reversed:[], when:"Your choice" }];
+  try { await store.setProfile(p); $("cqName").value=""; ui.qSig = ""; toast("Added. Paste its items below."); } catch { toast("Couldn't save"); }
+});
 
 /* ---------- export ---------- */
 function csv(rows, cols){
@@ -822,8 +883,9 @@ $("expEpisodes").addEventListener("click", () => {
   offer(`agency-mirror-episodes-${pcode()}.csv`, csv(rows, ["participant","id","at","condition","obstacle","intention","text","turns","revealed","revealedAtTurn","aiUsed","plan","started","autonomy","helpful"]));
 });
 $("expCheckins").addEventListener("click", () => {
-  const rows = state.checkins.map(c => ({...c, participant:pcode(), doing:(state.intentions.find(i=>i.id===c.intentionId)||{}).title || ""}));
-  offer(`agency-mirror-checkins-${pcode()}.csv`, csv(rows, ["participant","id","at","valence","arousal","agency","word","image","doing","note"]));
+  const rows = state.checkins.map(c => ({...c, participant:pcode(), doing:(state.intentions.find(i=>i.id===c.intentionId)||{}).title || "",
+    itch:c.skin ? c.skin.itch : "", itchSleep:c.skin ? c.skin.sleep : "", flare:c.skin ? c.skin.flare : "", medChange:c.skin ? (c.skin.medChange?1:0) : ""}));
+  offer(`agency-mirror-checkins-${pcode()}.csv`, csv(rows, ["participant","id","at","valence","arousal","agency","word","image","doing","note","itch","itchSleep","flare","medChange"]));
 });
 $("expIntents").addEventListener("click", () => {
   const rows = allTrials().map(t => ({ participant:pcode(), id:t.it.id, title:t.it.title, kind:t.it.kind||"", day:t.date, predicted:t.p, outcome:t.y,
@@ -919,7 +981,12 @@ document.addEventListener("click", e => {
   const r1 = e.target.closest("[data-release]"); if (r1) setRelease(r1.dataset.release, true);
   const r2 = e.target.closest("[data-unrelease]"); if (r2) setRelease(r2.dataset.unrelease, false);
   const f = e.target.closest("[data-fuid]"); if (f) answerFollowup(f.dataset.fuid);
-  const s = e.target.closest("[data-scale]"); if (s) submitScale(s.dataset.scale);
+  const tk = e.target.closest("[data-take]"); if (tk) { ui.q = { id:tk.dataset.take, kind:tk.dataset.kind }; renderStudy(); $("qRun").scrollIntoView({block:"nearest"}); }
+  if (e.target.closest("[data-qsubmit]")) submitScale();
+  if (e.target.closest("[data-qcancel]")) { ui.q = null; renderStudy(); }
+  const ss = e.target.closest("[data-setupsave]"); if (ss) saveSetup(ss.dataset.setupsave);
+  const cs = e.target.closest("[data-copysetup]"); if (cs) copySetup(cs.dataset.copysetup);
+  const cl = e.target.closest("[data-clearsetup]"); if (cl) clearSetup(cl.dataset.clearsetup);
 });
 setInterval(() => { if (!needsConsent()) render(); }, 60000);
 
@@ -975,7 +1042,7 @@ function renderPatterns(){
   $("obstacleBars").innerHTML = tally.length ? tally.map(([l,n]) => `<div class="bar-row"><span>${esc(l)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(100*n/mx)}%;background:var(--ink)"></div></div><span class="num">${n}</span></div>`).join("")
     : `<div class="empty">Each time you press "Help me start", the reason you pick is counted here.</div>`;
 
-  renderPredictions(); renderKinds(); renderDrivers(); renderWordStats(); renderCommitStats();
+  renderPredictions(); renderKinds(); renderDrivers(); renderWordStats(); renderSkin(); renderCommitStats();
 }
 
 const pct = x => (x==null || isNaN(x)) ? "–" : Math.round(x*100)+"%";
@@ -1051,6 +1118,34 @@ function renderWordStats(){
   const tally = {}; w.forEach(x => tally[x] = (tally[x]||0)+1);
   const top = Object.entries(tally).sort((a,b)=>b[1]-a[1]).slice(0,10), mx = top[0][1], distinct = Object.keys(tally).length;
   $("wordStats").innerHTML = `<p class="hint">${distinct} distinct words across ${w.length} check-ins · granularity ${(distinct/w.length).toFixed(2)}</p><div class="bars">${top.map(([k,n]) => barRow(k, n/mx, String(n), "var(--accent)", null)).join("")}</div>`;
+}
+
+function renderSkin(){
+  const days = {};
+  state.checkins.forEach(c => {
+    const d = dayKey(new Date(c.at)); const o = days[d] = days[d] || { v:[], itch:[], flare:[], med:false };
+    o.v.push(c.valence);
+    if (c.skin) { o.itch.push(c.skin.itch); o.flare.push(c.skin.flare); if (c.skin.medChange) o.med = true; }
+  });
+  const keys = Object.keys(days).sort(), skinDays = keys.filter(k => days[k].itch.length);
+  if (!skinDays.length) { $("skinStats").innerHTML = `<div class="empty">Open "Skin today" in one check-in a day. After about two weeks this shows whether your mood on one day goes with your itch that day or the next.</div>`; return; }
+  const worst = a => Math.max(...a);
+  const next = k => { const d = new Date(k+"T12:00:00"); d.setDate(d.getDate()+1); return dayKey(d); };
+  const same = [], lag = [];
+  keys.forEach(k => {
+    if (days[k].itch.length) same.push([M.mean(days[k].v), worst(days[k].itch)]);
+    const n = next(k); if (days[n] && days[n].itch.length) lag.push([M.mean(days[k].v), worst(days[n].itch)]);
+  });
+  const r = ps => ps.length >= 3 ? M.pearson(ps.map(p=>p[0]), ps.map(p=>p[1])) : NaN;
+  const fr = x => isNaN(x) ? "–" : (x>=0?"+":"")+x.toFixed(2);
+  const flares = skinDays.filter(k => days[k].flare.some(f => f!=="none")).length, meds = keys.filter(k => days[k].med).length;
+  $("skinStats").innerHTML = `<div class="stats">${[
+    [M.mean(skinDays.map(k => worst(days[k].itch))).toFixed(1), `average worst itch (${skinDays.length} day${skinDays.length===1?"":"s"})`],
+    [String(flares), "days with a flare"],
+    [fr(r(same)), `mood vs itch, same day (n=${same.length})`],
+    [fr(r(lag)), `mood today vs itch tomorrow (n=${lag.length})`]
+  ].map(([b,s]) => `<div class="stat"><b>${b}</b><span>${s}</span></div>`).join("")}</div>
+  <p class="hint">${lag.length < 14 ? `About 14 paired days are needed before these correlations mean much (you have ${lag.length}).` : "A negative value means lower mood goes with more itch."}${meds ? ` ${meds} day(s) had a medication change, so read the days around them with care.` : ""}</p>`;
 }
 
 function renderCommitStats(){
@@ -1209,16 +1304,41 @@ $("decList").addEventListener("click", async e => {
 });
 
 function renderStudy(){
-  const sc = state.profile && state.profile.scale;
-  if (sc && document.activeElement !== $("scaleItems") && !$("scaleItems").value) { $("scaleItems").value = sc.items.join("\n"); $("scaleName").value = sc.name; $("scaleAnchors").value = String(sc.max); }
-  if (sc && sc.items.length) {
-    const head = Array.from({length:sc.max},(_,k)=>k+1);
-    $("scaleRun").innerHTML = `<h3>${esc(sc.name)} · 1 = not at all true of me, ${sc.max} = completely true</h3>
-      <div class="chartbox"><table class="items"><tbody>${sc.items.map((it,i)=>`<tr><td>${i+1}. ${esc(it)}</td><td><div class="likert">${head.map(v=>`<label><input type="radio" name="sc-${i}" value="${v}">${v}</label>`).join("")}</div></td></tr>`).join("")}</tbody></table></div>
-      <div class="row"><button class="btn primary" data-scale="baseline">Save as baseline</button><button class="btn" data-scale="weekly">Save as weekly</button></div>`;
-  } else $("scaleRun").innerHTML = "";
-  const hist = [...state.scales].sort((a,b)=>a.at.localeCompare(b.at));
-  $("scaleHistory").innerHTML = hist.length ? `<h3>Your scores</h3><p class="meta">${hist.map(h=>`<span>${esc(h.kind)} ${fmtTime(h.at)}: ${h.mean}</span>`).join("")}</p>` : "";
+  const scales = allScales();
+  const hist = [...state.scales].sort((x,y) => x.at.localeCompare(y.at));
+  const lastOf = id => hist.filter(r => (r.scaleId||"legacy")===id).slice(-1)[0];
+  // rebuild only when something changed, so text being typed or answers being chosen survive re-renders
+  const sig = JSON.stringify(scales.map(s => [s.id, s.name, ready(s) ? s.items.length : 0, s.fromProfile||false, (lastOf(s.id)||{}).id||""]));
+  if (sig !== ui.qSig) {
+    ui.qSig = sig;
+    $("qList").innerHTML = scales.map(s => {
+      const last = lastOf(s.id);
+      const head = `<div class="title">${esc(s.name)}</div><div class="meta"><span>${ready(s) ? s.items.length+" items" : "not set up yet"}</span><span>answers 1–${s.max}</span>${s.when ? `<span>${esc(s.when)}</span>` : ""}${last ? `<span>last: ${esc(last.kind)}, ${esc(fmtTime(last.at))}, mean ${last.mean}</span>` : ""}</div>`;
+      const cite = s.cite ? `<p class="hint">${esc(s.cite)}${s.url ? ` <a href="${esc(s.url)}" target="_blank" rel="noopener">Source</a>` : ""}</p>` : "";
+      if (ready(s)) return `<div class="sheet">${head}${cite}
+        <div class="row"><button class="btn primary small" data-take="${s.id}" data-kind="baseline">Take as baseline</button><button class="btn small" data-take="${s.id}" data-kind="weekly">Take as weekly</button><button class="btn small" data-take="${s.id}" data-kind="end">Take as end of study</button></div>
+        ${s.fromProfile ? `<div class="row"><button class="btn small" data-copysetup="${s.id}">Copy setup for everyone</button><button class="btn small" data-clearsetup="${s.id}">Remove items</button></div>` : ""}</div>`;
+      return `<div class="sheet" data-setup="${s.id}">${head}${cite}
+        <p class="hint">Open the source, copy the ${s.nItems ? s.nItems+" " : ""}items and paste them here, one per line, in the published order. Then note which item numbers the source marks as reverse-scored. This only needs doing once.</p>
+        <label>Items<textarea class="su-items" style="min-height:120px"></textarea></label>
+        <div class="row"><label>Reverse-scored item numbers<input type="text" class="su-rev" placeholder="e.g. 3, 7"></label>
+          <label>What 1 means<input type="text" class="su-low" placeholder="the source's label for 1"></label>
+          <label>What ${s.max} means<input type="text" class="su-high" placeholder="the source's label for ${s.max}"></label></div>
+        <div class="row"><button class="btn small" data-setupsave="${s.id}">Save items</button></div></div>`;
+    }).join("");
+  }
+  const s = ui.q && scales.find(x => x.id===ui.q.id);
+  const runSig = s && ready(s) ? s.id+"|"+ui.q.kind+"|"+s.items.length : "";
+  if (runSig !== ui.qRunSig) {
+    ui.qRunSig = runSig;
+    if (runSig) {
+      const opts = Array.from({length:s.max}, (_,k) => k+1);
+      $("qRun").innerHTML = `<div class="sheet"><h3>${esc(s.name)} · ${esc(ui.q.kind)}</h3><p class="hint">1 = ${esc(s.low || "not at all true of me")} · ${s.max} = ${esc(s.high || "completely true of me")}</p>
+        <div class="chartbox"><table class="items"><tbody>${s.items.map((it,i) => `<tr><td>${i+1}. ${esc(it)}</td><td><div class="likert">${opts.map(v => `<label><input type="radio" name="sc-${i}" value="${v}">${v}</label>`).join("")}</div></td></tr>`).join("")}</tbody></table></div>
+        <div class="row"><button class="btn primary" data-qsubmit="1">Save answers</button><button class="btn" data-qcancel="1">Cancel</button></div></div>`;
+    } else $("qRun").innerHTML = "";
+  }
+  $("scaleHistory").innerHTML = hist.length ? `<h3>Your scores</h3><p class="meta">${hist.map(r => `<span>${esc(r.name)} · ${esc(r.kind)} ${esc(fmtTime(r.at))}: ${r.mean}</span>`).join("")}</p>` : "";
   $("dataCounts").textContent = `${state.intentions.length} intentions · ${state.checkins.length} check-ins · ${state.episodes.length} stuck episodes (${state.episodes.filter(e=>e.followup).length} followed up) · ${state.scales.length} questionnaires`;
 }
 

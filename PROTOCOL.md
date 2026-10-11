@@ -31,6 +31,14 @@ Adults who want help following through on self-chosen tasks, recruited informall
 - **Dependence:** in Socratic episodes, whether the participant pressed "Just tell me what to do".
 - **Descriptive (not randomized):** forecast calibration (Brier score), planning ratio, feeling error, and stated versus revealed drivers of follow-through.
 
+## Questionnaires
+
+The Irrational Procrastination Scale (9 items) at baseline and weekly. The Pure Procrastination Scale (12 items) and the Index of Autonomous Functioning at baseline and at the end of the study. Items come from the cited sources and are scored as the mean, after reverse-scoring the items those sources mark. They describe the sample and change over time; they are not outcomes of the randomized comparison.
+
+## Optional sub-study: skin and stress (single participant)
+
+One participant with atopic dermatitis records, once a day: worst itch in the last 24 hours (0–10), sleep disturbed by itch (0–10), flare (none, mild, clear), and any medication change, alongside the usual mood check-ins. Heart rate and heart-rate variability are measured with a portable device for two minutes at fixed times (on waking and before bed, seated). The question is descriptive: does mood or physiological arousal on one day go with itch the same day or the next? Analysis: within-person Pearson correlations, same day and lagged by one day, reported with the number of paired days. No causal claim is made. Medication changes are flagged and the surrounding days are interpreted with care. This sub-study is separate from the randomized comparison and does not affect it.
+
 ## Sample size
 
 This is a pilot whose purpose is estimation, not testing. Aim for at least 10–15 answered episodes per condition per participant. The results report effect sizes with 95% intervals and do not claim significance.
