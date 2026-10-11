@@ -1,0 +1,1232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Agency Mirror: an open research instrument for the intention-action gap.">
+<title>Agency Mirror</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a lab notebook. One narrow column, tab bar for four instruments: Today, Stuck, Patterns, Study. */
+:root{
+  --paper:#eef0ec; --sheet:#f8f9f6; --ink:#1b2230; --muted:#5d6672; --rule:#cfd4cc;
+  --accent:#5b2a52; --accent-soft:#eadde6; --on-accent:#fbf6fa;
+  --good:#2f6b4a; --warn:#9a6a12; --bad:#9b2f2f;
+  --c-soc:#5b2a52; --c-dir:#2c5f7c; --c-log:#7a7f6b;
+  --display:"Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#14171c; --sheet:#1b1f26; --ink:#e6e8e3; --muted:#9aa2ab; --rule:#2e343d;
+    --accent:#d39ac6; --accent-soft:#3a2636; --on-accent:#1b0f19;
+    --good:#7fc39b; --warn:#e0b45c; --bad:#e88b8b;
+    --c-soc:#d39ac6; --c-dir:#7fb6d6; --c-log:#a9ad98;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#14171c; --sheet:#1b1f26; --ink:#e6e8e3; --muted:#9aa2ab; --rule:#2e343d;
+  --accent:#d39ac6; --accent-soft:#3a2636; --on-accent:#1b0f19;
+  --good:#7fc39b; --warn:#e0b45c; --bad:#e88b8b;
+  --c-soc:#d39ac6; --c-dir:#7fb6d6; --c-log:#a9ad98;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:20px 64px}
+header.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:400;font-size:2.4rem;line-height:1.05;margin:0;letter-spacing:-.01em}
+h1 em{font-style:italic;color:var(--accent)}
+.sub{color:var(--muted);margin:4px 0 0;max-width:60ch}
+.status{font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);display:flex;gap:4px;margin:18px -16px 0;padding:8px 16px;border-bottom:1px solid var(--rule);overflow-x:auto}
+nav.tabs button{font:500 .9rem var(--body);background:none;border:0;color:var(--muted);padding:8px 12px;border-radius:6px;cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--ink);background:var(--sheet);box-shadow:inset 0 -2px 0 var(--accent)}
+nav.tabs .count{font-family:var(--mono);font-size:.7rem;background:var(--accent);color:var(--on-accent);border-radius:9px;padding:1px 6px;margin-left:6px}
+section.panel{display:grid;gap:22px;padding-top:20px}
+h2{font-family:var(--display);font-weight:400;font-size:1.6rem;margin:0;line-height:1.1;text-wrap:balance}
+h3{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:600}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:16px;display:grid;gap:12px;min-width:0}
+.hint{color:var(--muted);font-size:.88rem;margin:0}
+label{display:grid;gap:4px;font-size:.85rem;color:var(--muted)}
+input[type=text],input[type=number],textarea,select{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:8px 10px;width:100%}
+textarea{min-height:76px;resize:vertical}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.row > *{flex:1 1 140px;min-width:0}
+.btn{font:500 .9rem var(--body);border:1px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:6px;padding:8px 14px;cursor:pointer}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.small{padding:4px 10px;font-size:.8rem}
+.btn:disabled{opacity:.5;cursor:default}
+.scale{display:grid;gap:6px}
+.scale .ends{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.readout{font-family:var(--mono);font-size:.8rem;color:var(--ink)}
+ul.list{list-style:none;margin:0;padding:0;display:grid;gap:0}
+ul.list li{display:grid;grid-template-columns:1fr auto;gap:8px 12px;padding:12px 0;border-top:1px solid var(--rule);align-items:center}
+ul.list li:first-child{border-top:0}
+.title{font-weight:500;min-width:0;overflow-wrap:anywhere}
+.meta{font-family:var(--mono);font-size:.72rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-block;font-family:var(--mono);font-size:.68rem;padding:1px 7px;border-radius:9px;border:1px solid currentColor}
+.pill.done{color:var(--good)} .pill.partial{color:var(--warn)} .pill.dropped{color:var(--muted)} .pill.defer{color:var(--bad)}
+.alert{border-left:3px solid var(--bad);padding:10px 12px;background:var(--sheet);border-radius:0 6px 6px 0}
+.alert strong{color:var(--bad)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:.82rem var(--body);border:1px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:16px;padding:5px 11px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.convo{display:grid;gap:10px}
+.msg{padding:10px 12px;border-radius:8px;max-width:92%;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.coach{background:var(--accent-soft);justify-self:start}
+.msg.me{background:var(--paper);border:1px solid var(--rule);justify-self:end}
+.cond{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.empty{border:1px dashed var(--rule);border-radius:8px;padding:16px;color:var(--muted);font-size:.9rem}
+.bars{display:grid;gap:14px}
+.bar-row{display:grid;grid-template-columns:96px 1fr 92px;gap:10px;align-items:center;font-size:.85rem}
+.bar-track{height:14px;background:var(--paper);border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.8rem;text-align:right}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{border-top:2px solid var(--ink);padding-top:6px}
+.stat b{display:block;font-family:var(--display);font-weight:400;font-size:1.9rem;line-height:1}
+.stat span{font-size:.78rem;color:var(--muted)}
+.chartbox{overflow-x:auto}
+svg text{fill:var(--muted);font-family:var(--mono);font-size:10px}
+.prose{max-width:62ch}
+.prose p{margin:0 0 10px}
+table.items{width:100%;border-collapse:collapse;font-size:.88rem}
+table.items td{padding:8px 4px;border-top:1px solid var(--rule);vertical-align:top}
+.likert{display:flex;gap:4px;flex-wrap:wrap}
+.likert label{display:flex;align-items:center;gap:3px;font-family:var(--mono);color:var(--ink)}
+.banner{background:var(--accent-soft);border-radius:6px;padding:10px 12px;font-size:.88rem}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:6px;font-size:.88rem;z-index:20}
+details.math{border-top:1px dashed var(--rule);padding-top:8px}
+details.math summary{cursor:pointer;font-size:.84rem;color:var(--accent);font-weight:500}
+details.math p,details.math li{font-size:.86rem;max-width:64ch}
+details.math ol,details.math ul{padding-left:20px;margin:6px 0}
+.formula{font-family:var(--mono);font-size:.8rem;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:8px 10px;overflow-x:auto;white-space:pre;margin:6px 0}
+details.commit{border:1px solid var(--rule);border-radius:6px;padding:8px 12px;background:var(--paper)}
+details.commit summary{cursor:pointer;font-size:.88rem;font-weight:500}
+details.commit[open]{display:grid;gap:10px}
+table.grid{border-collapse:collapse;font-size:.85rem;width:100%}
+table.grid th,table.grid td{border-top:1px solid var(--rule);padding:6px 4px;text-align:left;vertical-align:middle}
+table.grid th{font-size:.7rem;color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+table.grid input,table.grid select{padding:4px 6px}
+table.grid input[type=number]{width:4.6em}
+table.grid td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.8rem}
+.bar-track{position:relative}
+.tick{position:absolute;top:0;bottom:0;width:3px;margin-left:-1px;background:var(--ink)}
+.closing{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:end;padding:10px;border:1px solid var(--rule);border-radius:6px;background:var(--paper)}
+.closing label{flex:1 1 130px}
+.pill.bound{color:var(--accent)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.verdict{font-size:.95rem;max-width:64ch}
+@media (max-width:480px){ .bar-row{grid-template-columns:72px 1fr 78px} h1{font-size:2rem} ul.list li{grid-template-columns:1fr} .acts{justify-content:flex-start} }
+@media (prefers-reduced-motion:no-preference){ .bar-fill{transition:width .4s ease} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Agency <em>Mirror</em></h1>
+      <p class="sub">Say what you intend. See what you actually do. When you stall, get questions instead of answers, and find out which helps you more.</p>
+    </div>
+    <div class="status" id="status">Connecting…</div>
+  </header>
+
+  <div id="storeBanner" class="banner" hidden></div>
+  <noscript><div class="banner">Agency Mirror needs JavaScript to run.</div></noscript>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-today" aria-selected="true" data-tab="today">Today</button>
+    <button role="tab" id="tab-stuck" aria-selected="false" data-tab="stuck">I'm stuck<span class="count" id="followCount" hidden></span></button>
+    <button role="tab" id="tab-patterns" aria-selected="false" data-tab="patterns">Patterns</button>
+    <button role="tab" id="tab-decide" aria-selected="false" data-tab="decide">Decide</button>
+    <button role="tab" id="tab-study" aria-selected="false" data-tab="study">Study</button>
+  </nav>
+
+  <!-- CONSENT -->
+  <section class="panel" id="consentPanel" hidden>
+    <div class="sheet prose">
+      <h2>Before you start</h2>
+      <p>This is a research prototype. It records what you plan to do, what you then do, short mood check-ins, and what happens when you say you are stuck. When you are stuck it randomly gives you one of three responses: questions only, direct advice, or nothing but a note. Later it asks whether you started.</p>
+      <p>Your entries are saved only in this browser, on this device. Nobody else can read them, including the researcher. If you take part in the pilot, you choose whether to export your data and send it. Clearing your browser data deletes them, so export a backup now and then.</p>
+      <p>This is not therapy or medical care. If you are in crisis, contact someone you trust or a local crisis line.</p>
+      <label for="pcode">Participant code (optional, a pseudonym such as P07)
+        <input type="text" id="pcode" maxlength="20" autocomplete="off">
+      </label>
+      <div class="row"><button class="btn primary" id="consentBtn">I understand, start</button></div>
+    </div>
+  </section>
+
+  <!-- TODAY -->
+  <section class="panel" id="panel-today" role="tabpanel">
+    <div id="alerts"></div>
+
+    <div class="sheet">
+      <h3>What do you intend to do?</h3>
+      <form id="intentForm" class="row" autocomplete="off">
+        <label style="flex:3 1 260px" for="iTitle">Intention
+          <input type="text" id="iTitle" placeholder="e.g. Read Bermúdez ch. 4 for 45 minutes" required maxlength="140">
+        </label>
+        <label for="iMin">Minutes
+          <input type="number" id="iMin" min="5" max="600" step="5" value="30">
+        </label>
+        <label for="iImp">Matters to me (1–5)
+          <select id="iImp"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+        </label>
+        <label for="iInt">Interesting (1–5)
+          <select id="iInt"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+        </label>
+        <label for="iCat">Kind
+          <select id="iCat">
+            <option value="study">Study or reading</option><option value="writing">Writing</option><option value="build">Building or coding</option>
+            <option value="admin">Admin or applications</option><option value="health">Health or body</option><option value="people">People</option><option value="other">Other</option>
+          </select>
+        </label>
+        <label for="iP">Chance I do it today
+          <select id="iP"></select>
+        </label>
+        <label for="iFeel">How I'll feel after (−3 to +3)
+          <select id="iFeel"></select>
+        </label>
+        <button class="btn primary" type="submit">Add</button>
+      </form>
+      <p class="hint" id="priorHint"></p>
+      <details class="commit" id="commitBox">
+        <summary>Bind myself to this one (optional)</summary>
+        <p class="hint">A commitment device, like Odysseus asking to be tied to the mast. Use it only if you want to. Not using one is a fine choice, and a missed commitment tells you which level binds you, not what you're worth. The app records the commitment; you or your partner carry out any stake.</p>
+        <div class="row">
+          <label for="cLevel">Strength
+            <select id="cLevel">
+              <option value="none">No commitment</option>
+              <option value="pledge">Written pledge to myself</option>
+              <option value="partner">Tell a person who will ask me</option>
+              <option value="stake">Stake: I lose something if I don't</option>
+            </select></label>
+          <label for="cPartner">Person (if any)
+            <input type="text" id="cPartner" maxlength="60" placeholder="e.g. Khushi"></label>
+        </div>
+        <label for="cStake">The promise or stake, in your words
+          <input type="text" id="cStake" maxlength="160" placeholder="e.g. If I don't, I donate ₹300 to a cause I'd rather not fund"></label>
+        <p class="hint">You can release a commitment any time, but the release only takes effect after 24 hours, so the version of you who made it gets a say.</p>
+      </details>
+    </div>
+
+    <div class="sheet">
+      <h3>Today's intentions</h3>
+      <ul class="list" id="todayList"></ul>
+      <div class="empty" id="todayEmpty">Nothing planned yet. Add one to three intentions above. Each one gets Done, Partly, Not today or Drop when you close it, and anything you push to tomorrow is counted.</div>
+    </div>
+
+    <div class="sheet">
+      <h3>Check in</h3>
+      <p class="hint">Takes ten seconds. Do it when you notice yourself drifting, and once in the evening.</p>
+      <div class="row">
+        <div class="scale"><label for="valence">Mood <span class="readout" id="valOut">0</span></label>
+          <input type="range" id="valence" min="-3" max="3" step="1" value="0">
+          <div class="ends"><span>very unpleasant</span><span>very pleasant</span></div></div>
+        <div class="scale"><label for="arousal">Energy <span class="readout" id="aroOut">3</span></label>
+          <input type="range" id="arousal" min="1" max="5" step="1" value="3">
+          <div class="ends"><span>flat</span><span>wired</span></div></div>
+      </div>
+      <div class="scale"><label for="agency">"I am doing what I chose to do" <span class="readout" id="agOut">4</span></label>
+        <input type="range" id="agency" min="1" max="7" step="1" value="4">
+        <div class="ends"><span>not at all</span><span>completely</span></div></div>
+      <div>
+        <h3 id="wordHead">Name the feeling more precisely</h3>
+        <div class="chips" id="wordChips" role="group" aria-labelledby="wordHead"></div>
+      </div>
+      <div class="row">
+        <label for="ciWord">Or your own word
+          <input type="text" id="ciWord" maxlength="40" autocomplete="off" placeholder="e.g. wistful"></label>
+        <label for="ciImage" style="flex:2 1 220px">An image or metaphor for it (optional)
+          <input type="text" id="ciImage" maxlength="160" autocomplete="off" placeholder="e.g. like walking through wet sand"></label>
+      </div>
+      <div class="row">
+        <label for="ciDoing">What I'm doing now
+          <select id="ciDoing"></select></label>
+        <label for="ciNote" style="flex:2 1 220px">One-line note (optional)
+          <input type="text" id="ciNote" maxlength="200" placeholder="e.g. scrolling reels, feel guilty"></label>
+      </div>
+      <div class="row"><button class="btn primary" id="ciBtn">Save check-in</button></div>
+    </div>
+  </section>
+
+  <!-- STUCK -->
+  <section class="panel" id="panel-stuck" role="tabpanel" hidden>
+    <div id="followups"></div>
+
+    <div class="sheet" id="stuckStart">
+      <h2>What's in the way?</h2>
+      <label for="sIntent">Which intention are you avoiding?
+        <select id="sIntent"></select></label>
+      <div>
+        <h3>Closest reason</h3>
+        <div class="chips" id="obstacleChips"></div>
+      </div>
+      <label for="sText">Say it in your own words
+        <textarea id="sText" maxlength="800" placeholder="e.g. I open the PDF and immediately feel it's pointless because I'll forget it anyway"></textarea></label>
+      <div class="row"><button class="btn primary" id="stuckBtn">Help me start</button></div>
+      <p class="hint">You'll get one of three responses, picked at random so the study is fair: questions only, direct advice, or a plain note. That randomness is the experiment. This open version uses a fixed, scripted coach so every participant gets the same wording.</p>
+    </div>
+
+    <div class="sheet" id="stuckSession" hidden>
+      <div class="cond" id="condLabel"></div>
+      <div class="convo" id="convo"></div>
+      <div id="replyBox" class="row" hidden>
+        <label for="replyText" style="flex:3 1 260px">Your answer
+          <input type="text" id="replyText" maxlength="400" autocomplete="off"></label>
+        <button class="btn" id="replyBtn">Answer</button>
+      </div>
+      <div class="row" id="revealRow" hidden><button class="btn small" id="revealBtn">Just tell me what to do</button></div>
+      <label for="planText">What will you do in the next 30 minutes? (your words)
+        <input type="text" id="planText" maxlength="200" autocomplete="off"></label>
+      <div class="row"><button class="btn primary" id="closeEpisode">Save and go do it</button></div>
+    </div>
+  </section>
+
+  <!-- PATTERNS -->
+  <section class="panel" id="panel-patterns" role="tabpanel" hidden>
+    <div class="stats" id="stats"></div>
+
+    <div class="sheet" id="predSheet">
+      <h3>How well you predict yourself</h3>
+      <div class="stats" id="predStats"></div>
+      <div class="bars" id="calBars"></div>
+      <div class="legend"><span><i style="background:var(--accent)"></i>what actually happened</span><span><i style="background:var(--ink);width:3px"></i>what you predicted</span></div>
+      <p class="hint" id="predNote"></p>
+      <details class="math"><summary>The math, step by step</summary>
+        <p><strong>1. Each intention-day is a trial.</strong> You predicted a chance <em>p</em> (say 70%, written 0.7). The outcome <em>y</em> is 1 if you did it, 0.5 if partly, and 0 if you pushed or dropped it. Pushing it to tomorrow closes today's trial as 0 and opens a new one.</p>
+        <p><strong>2. Brier score</strong>, the average squared distance between prediction and outcome. 0 is perfect; always saying 50% scores 0.25.</p>
+        <div class="formula">Brier = (1/N) × Σ (p − y)²</div>
+        <p><strong>3. A fair comparison.</strong> Imagine you had simply predicted your own overall success rate <em>ȳ</em> every time. That gives a baseline Brier. Skill tells you how much better your individual guesses are than that lazy rule. Above 0 means your guesses carry information, and below 0 means you'd do better ignoring your gut and using your average.</p>
+        <div class="formula">Skill = 1 − Brier ÷ Brier_baseline,   where Brier_baseline = (1/N) × Σ (ȳ − y)²</div>
+        <p><strong>4. Calibration.</strong> Group the trials by what you predicted (low ≤30%, middle 40–60%, high ≥70%) and compare the predicted average with what actually happened. If the bar falls short of the line, you were overconfident in that range.</p>
+        <p><strong>5. Planning ratio</strong> = actual minutes ÷ planned minutes, using the median so one marathon day doesn't dominate. Above 1 is the planning fallacy (Buehler, Griffin and Ross, 1994).</p>
+        <p><strong>6. Feeling error</strong> = how you actually felt − how you predicted you'd feel. Negative means things felt worse than expected, positive means better. A consistently positive error on tasks you avoid means you dread them more than they deserve, which is Gilbert and Wilson's impact bias showing up in your own data.</p>
+      </details>
+    </div>
+
+    <div class="sheet" id="kindSheet">
+      <h3>Your track record by kind of task</h3>
+      <div id="kindTable"></div>
+      <details class="math"><summary>The math: a Beta–Bernoulli model</summary>
+        <p>For each kind of task the model keeps two counts. α is 1 plus the successes and β is 1 plus the misses, with a partial counting half each way. Starting both at 1 means "no idea yet, any rate is equally likely".</p>
+        <div class="formula">estimate = α ÷ (α + β)
+spread   = √( αβ ÷ ((α+β)² (α+β+1)) )
+range    ≈ estimate ± 1.28 × spread   (about 80%, approximate)</div>
+        <p>Every new outcome adds 1 to one count, so the estimate moves a lot early and settles as evidence builds. That is Bayesian updating in its simplest form, and it's what the "your record" hint under the intention form uses.</p>
+      </details>
+    </div>
+
+    <div class="sheet" id="driverSheet">
+      <h3>What actually drives what you do</h3>
+      <p class="verdict" id="driverVerdict"></p>
+      <div class="scale"><label for="statedImp"><span>What you say should drive you: importance <span class="readout" id="statedOut">50</span> / interest <span class="readout" id="statedOut2">50</span></span></label>
+        <input type="range" id="statedImp" min="0" max="100" step="5" value="50">
+        <div class="ends"><span>all interest</span><span>all importance</span></div></div>
+      <div id="driverTables"></div>
+      <details class="math"><summary>The math: revealed preference by logistic regression</summary>
+        <p>Your stated values are what you say matters. Your revealed values are whatever predicts what you actually do. To estimate them, the app fits a logistic regression on every trial, predicting the outcome from the importance and interest you gave the intention:</p>
+        <div class="formula">P(do it) = 1 ÷ (1 + e^−(b₀ + b₁·importance_z + b₂·interest_z))</div>
+        <p>Both ratings are first standardized (subtract the mean, divide by the spread), so b₁ and b₂ are on the same scale and can be compared. The revealed share for importance is |b₁| ÷ (|b₁| + |b₂|). The fit uses gradient descent with a small penalty that stops wild numbers when data is thin.</p>
+        <p>Read it as a rough guide below 50 trials. It is correlational: maybe you rate tasks you'd do anyway as more interesting. The tables of raw rates are there so you can check the model against the plain numbers.</p>
+      </details>
+    </div>
+
+    <div class="sheet">
+      <h3>Did you start within 30 minutes? By response type</h3>
+      <div class="bars" id="condBars"></div>
+      <p class="hint" id="condNote"></p>
+    </div>
+
+    <div class="sheet">
+      <h3>Mood and sense of agency, last 40 check-ins</h3>
+      <div class="chartbox" id="moodChart"></div>
+    </div>
+
+    <div class="sheet">
+      <h3>What gets in the way most</h3>
+      <div class="bars" id="obstacleBars"></div>
+    </div>
+
+    <div class="sheet">
+      <h3>Your feeling vocabulary</h3>
+      <div id="wordStats"></div>
+      <details class="math"><summary>Why name feelings precisely</summary>
+        <p>Lisa Feldman Barrett calls the ability to tell similar feelings apart <em>emotional granularity</em>. In her studies, people who make finer distinctions tend to regulate their emotions better. Marc Brackett's Mood Meter sorts feelings by the same two axes as your sliders, pleasantness and energy, then asks for a specific word. The granularity figure here is a crude stand-in: distinct words you've used divided by check-ins that have a word.</p>
+      </details>
+    </div>
+
+    <div class="sheet">
+      <h3>Commitments</h3>
+      <div id="commitStats"></div>
+      <details class="math"><summary>How to read this</summary>
+        <p>The rates compare intentions you bound with ones you didn't. You chose which to bind, so this isn't a randomized comparison: you might bind only the tasks you were already unsure about. The trend line matters more. The long-term aim is to need the mast less, so a falling share of bound intentions with steady follow-through is the good outcome.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- DECIDE -->
+  <section class="panel" id="panel-decide" role="tabpanel" hidden>
+    <div class="sheet prose">
+      <h2>Decide when you can't run the experiment</h2>
+      <p>Some choices happen once, such as where to do a master's. You can't learn from repetition, but you can do three things: find the objectives you forgot, admit you're unsure how much each one matters, and record your gut call so you can check it later.</p>
+    </div>
+    <div class="sheet" id="decEditor"></div>
+    <div class="sheet" id="decResult" hidden></div>
+    <div class="sheet">
+      <h3>Saved decisions</h3>
+      <ul class="list" id="decList"></ul>
+      <div class="empty" id="decEmpty">Nothing saved yet. Saved decisions keep your gut call and the model's answer side by side, so you can write down later how it actually turned out.</div>
+    </div>
+  </section>
+
+  <!-- STUDY -->
+  <section class="panel" id="panel-study" role="tabpanel" hidden>
+    <div class="sheet prose">
+      <h2>Questionnaires</h2>
+      <p>Paste the items of a validated scale, one per line. Mark reverse-scored items with <code>(R)</code> at the end. Take it once at the start (baseline) and once a week.</p>
+      <label for="scaleName">Scale name
+        <input type="text" id="scaleName" maxlength="60" placeholder="e.g. Pure Procrastination Scale"></label>
+      <label for="scaleItems">Items
+        <textarea id="scaleItems" style="min-height:140px"></textarea></label>
+      <div class="row">
+        <label for="scaleAnchors">Response range
+          <select id="scaleAnchors"><option value="5">1–5</option><option value="7">1–7</option></select></label>
+        <button class="btn" id="saveScale">Save items</button>
+      </div>
+      <div id="scaleRun"></div>
+      <div id="scaleHistory"></div>
+    </div>
+
+    <div class="sheet prose">
+      <h2>Your data</h2>
+      <p class="hint" id="dataCounts"></p>
+      <div class="row">
+        <button class="btn" id="expEpisodes">Export stuck episodes (CSV)</button>
+        <button class="btn" id="expCheckins">Export check-ins (CSV)</button>
+        <button class="btn" id="expIntents">Export intentions and predictions (CSV)</button>
+        <button class="btn" id="expAll">Export everything (JSON backup)</button>
+        <label for="impFile" class="btn" style="position:relative;display:inline-flex;align-items:center;color:var(--ink)">Import a JSON backup<input type="file" id="impFile" accept="application/json,.json" style="position:absolute;width:1px;height:1px;opacity:0"></label>
+      </div>
+      <p class="hint" id="exportMsg"></p>
+    </div>
+
+    <div class="sheet prose">
+      <h2>How the experiment works</h2>
+      <p><strong>Question.</strong> When someone is avoiding a task they chose, does being asked questions (Socratic) help them start as often as being told what to do, while leaving them feeling the decision was theirs?</p>
+      <p><strong>Design.</strong> Within-person randomized. Each time you press "Help me start", the app assigns whichever of the three responses you have received least so far, breaking ties at random. This keeps the groups balanced even with few episodes.</p>
+      <p><strong>Outcomes.</strong> Primary: started within 30 minutes (yes/no). Secondary: "the decision felt like mine" and "this helped" (1–7). Dependence: how often you press "Just tell me what to do" during questions.</p>
+      <p><strong>Limits.</strong> Self-report, unblinded (you can see which response you got), and a small sample. Read results as a pilot, not proof.</p>
+      <p><strong>Added in version 2.</strong> Each intention now carries a forecast (chance of doing it, minutes, expected feeling) that is scored against what happens. Check-ins carry a feeling word. A model compares what you say drives you with what predicts your behaviour. Commitments are opt-in and recorded, and they are not part of the randomized comparison, which stays limited to the three stuck responses.</p>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="am-math.js"></script>
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const M = window.AMMath;
+const KINDS = {study:"Study or reading", writing:"Writing", build:"Building or coding", admin:"Admin or applications", health:"Health or body", people:"People", other:"Other"};
+const WORDS = {
+  hp:["excited","curious","inspired","energized","proud","playful","determined","hopeful"],
+  lp:["calm","content","relaxed","grateful","at ease","relieved","serene","satisfied"],
+  hn:["anxious","frustrated","irritated","restless","overwhelmed","tense","ashamed","jealous"],
+  ln:["drained","bored","sad","lonely","discouraged","apathetic","numb","disappointed"],
+  mid:["neutral","ambivalent","distracted","mixed","pensive","indifferent"]
+};
+const COMMIT_LABEL = {pledge:"pledge", partner:"partner", stake:"stake"};
+const RELEASE_MS = 24*60*60*1000;
+const CONDS = ["socratic","directive","note"];
+const COND_LABEL = {socratic:"Questions only", directive:"Direct advice", note:"Plain note"};
+const COND_VAR = {socratic:"var(--c-soc)", directive:"var(--c-dir)", note:"var(--c-log)"};
+const OBSTACLES = [
+  ["unclear","Don't know the first step"],["toobig","Feels too big"],["boring","Boring"],
+  ["fear","Afraid of doing it badly"],["pointless","Feels pointless"],["tired","Tired or unwell"],
+  ["distracted","Pulled to my phone"],["other","Something else"]
+];
+const FOLLOW_MS = 30*60*1000;
+
+const KINDS_LIST = ["intentions","checkins","episodes","scales","decisions"];
+const state = { profile:null, intentions:[], checkins:[], episodes:[], scales:[], decisions:[] };
+let store = null;       // adapter
+let sample = null;      // Claude sampling fn or null
+let downloads = null;
+let ui = { tab:"today", obstacle:null, session:null, closing:null, word:null, dec:null, decBuilt:false };
+const TABS = ["today","stuck","patterns","decide","study"];
+
+/* ---------- helpers ---------- */
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2));
+const dayKey = (d=new Date()) => { const z=n=>String(n).padStart(2,"0"); return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate()); };
+const tomorrowKey = () => { const d=new Date(); d.setDate(d.getDate()+1); return dayKey(d); };
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtTime = iso => { try { const d=new Date(iso); return d.toLocaleDateString(undefined,{month:"short",day:"numeric"})+" "+d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"}); } catch { return iso; } };
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2200); }
+
+/* ---------- storage adapters ---------- */
+function memoryStore(){
+  const data = Object.fromEntries(KINDS_LIST.map(k => [k, new Map()]));
+  let profile = null; const subs = [];
+  const emit = () => subs.forEach(f=>f());
+  return {
+    kind:"memory",
+    subscribe(f){ subs.push(f); f(); },
+    snapshot(){ const o = { profile }; KINDS_LIST.forEach(k => o[k] = [...data[k].values()]); return o; },
+    async setProfile(p){ profile = {...p}; emit(); },
+    async put(kind, id, obj){ data[kind].set(id, {...obj, id}); emit(); },
+    async del(kind, id){ data[kind].delete(id); emit(); }
+  };
+}
+function dbStore(db, userId){
+  const profRef = db.doc("data/users/"+userId+"/profile");
+  const snap = { profile:null }; KINDS_LIST.forEach(k => snap[k] = []);
+  const subs = []; const emit = () => subs.forEach(f=>f());
+  const onErr = e => { $("status").textContent = "Sync stopped ("+(e && e.code || "error")+"). Reload to reconnect."; };
+  profRef.onSnapshot(s => { snap.profile = s.exists ? s.data() : null; emit(); }, onErr);
+  for (const kind of KINDS_LIST) {
+    profRef.collection(kind).onSnapshot(q => { snap[kind] = q.docs.map(d => ({...d.data(), id:d.id})); emit(); }, onErr);
+  }
+  // one write at a time per document
+  const queues = new Map();
+  const serial = (key, fn) => { const p = (queues.get(key)||Promise.resolve()).then(fn, fn); queues.set(key, p.catch(()=>{})); return p; };
+  return {
+    kind:"db",
+    subscribe(f){ subs.push(f); f(); },
+    snapshot(){ return snap; },
+    setProfile(p){ return serial("profile", () => profRef.set(p)); },
+    put(kind, id, obj){ const body = {...obj}; delete body.id; return serial(kind+"/"+id, () => profRef.collection(kind).doc(id).set(body)); },
+    del(kind, id){ return serial(kind+"/"+id, () => profRef.collection(kind).doc(id).delete()); }
+  };
+}
+async function save(kind, obj){
+  if (!store) return;
+  try { await store.put(kind, obj.id, obj); }
+  catch(e){ toast(e && e.code === "quota_exceeded" ? "Storage is full. Export and delete old entries." : "Couldn't save. Check your connection and try again."); throw e; }
+}
+
+/* ---------- boot ---------- */
+function localStore(){
+  const KEY = "agency-mirror-v2";
+  let db = { profile:null }; KINDS_LIST.forEach(k => db[k] = {});
+  try { const raw = localStorage.getItem(KEY); if (raw) { const p = JSON.parse(raw); db = {...db, ...p}; KINDS_LIST.forEach(k => db[k] = db[k] || {}); } } catch {}
+  const subs = []; const emit = () => subs.forEach(f => f());
+  const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e) { const err = new Error("quota"); err.code = "quota_exceeded"; throw err; } };
+  return {
+    kind:"local",
+    subscribe(f){ subs.push(f); f(); },
+    snapshot(){ const o = { profile:db.profile }; KINDS_LIST.forEach(k => o[k] = Object.values(db[k])); return o; },
+    async setProfile(p){ db.profile = {...p}; persist(); emit(); },
+    async put(kind, id, obj){ db[kind][id] = {...obj, id}; persist(); emit(); },
+    async del(kind, id){ delete db[kind][id]; persist(); emit(); },
+    async importAll(data){
+      if (data.profile && !db.profile) db.profile = data.profile;
+      let n = 0;
+      KINDS_LIST.forEach(k => (Array.isArray(data[k]) ? data[k] : []).forEach(r => { if (r && r.id) { db[k][r.id] = r; n++; } }));
+      persist(); emit(); return n;
+    }
+  };
+}
+function boot(){
+  let ok = true;
+  try { localStorage.setItem("am-probe","1"); localStorage.removeItem("am-probe"); } catch { ok = false; }
+  if (ok) { store = localStore(); $("status").textContent = "Saved in this browser · scripted coach"; }
+  else {
+    store = memoryStore(); $("status").textContent = "Not saving";
+    const b = $("storeBanner"); b.hidden = false;
+    b.textContent = "This browser is blocking storage (private window or blocked site data), so nothing will be kept after you close the page.";
+  }
+  store.subscribe(() => { Object.assign(state, store.snapshot()); render(); });
+}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
+function setTab(t){
+  ui.tab = t;
+  document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab===t)));
+  for (const n of TABS) $("panel-"+n).hidden = (n!==t) || needsConsent();
+  if (t === "decide" && !ui.decBuilt) { if (!ui.dec) ui.dec = newDecision(); buildEditor(); }
+  try { localStorage.setItem("am-tab", t); } catch {}
+  render();
+}
+const needsConsent = () => !(state.profile && state.profile.consentAt);
+
+/* ---------- consent ---------- */
+$("consentBtn").addEventListener("click", async () => {
+  if (!store) return;
+  const p = { ...(state.profile||{}), consentAt:new Date().toISOString(), code:$("pcode").value.trim().slice(0,20), version:1 };
+  try { await store.setProfile(p); } catch { toast("Couldn't save. Try again."); }
+});
+
+/* ---------- today ---------- */
+$("iP").innerHTML = [5,10,20,30,40,50,60,70,80,90,95].map(v => `<option value="${v}"${v===70?" selected":""}>${v}%</option>`).join("");
+$("iFeel").innerHTML = [-3,-2,-1,0,1,2,3].map(v => `<option value="${v}"${v===1?" selected":""}>${v>0?"+"+v:v}</option>`).join("");
+// Every intention-day is one trial: y = 1 done, 0.5 partly, 0 pushed or dropped.
+const OUTCOME = { done:1, partial:0.5, defer:0, dropped:0 };
+const trialsOf = it => it.trials || [];
+const allTrials = () => state.intentions.flatMap(it => trialsOf(it).map(t => ({...t, it})));
+function kindRecord(kind){ return M.betaPost(allTrials().filter(t => (t.it.kind||"other")===kind).map(t => t.y)); }
+function updatePriorHint(){
+  const k = $("iCat").value, r = kindRecord(k);
+  if (!r.n) { $("priorHint").textContent = `No track record yet for "${KINDS[k]}". Your forecast is a pure guess for now, and that's fine: the guesses are what get scored.`; return; }
+  const pct = Math.round(r.mean*100), near = r.mean >= 0.925 ? 95 : r.mean < 0.075 ? 5 : Math.min(90, Math.max(10, Math.round(r.mean*10)*10));
+  $("priorHint").innerHTML = `Your record for "${esc(KINDS[k])}": ${fmtN(r.succ)} of ${r.n} tries → the model says about <b>${pct}%</b> (80% range ${Math.round(r.lo*100)}–${Math.round(r.hi*100)}%). <button type="button" class="btn small" id="usePrior" data-near="${near}">Use ${near}%</button>`;
+}
+const fmtN = x => Number.isInteger(x) ? String(x) : x.toFixed(1);
+$("iCat").addEventListener("change", updatePriorHint);
+$("priorHint").addEventListener("click", e => { const b = e.target.closest("#usePrior"); if (b) $("iP").value = b.dataset.near; });
+
+$("intentForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const title = $("iTitle").value.trim(); if (!title) return;
+  const level = $("cLevel").value;
+  const it = { id:uid(), title, minutes:+$("iMin").value||30, importance:+$("iImp").value, interest:+$("iInt").value,
+    kind:$("iCat").value, pDo:(+$("iP").value)/100, predFeel:+$("iFeel").value,
+    date:dayKey(), originalDate:dayKey(), status:"open", deferCount:0, trials:[], createdAt:new Date().toISOString() };
+  if (level !== "none") it.commitment = { level, partner:$("cPartner").value.trim(), stake:$("cStake").value.trim(), madeAt:new Date().toISOString() };
+  try {
+    await save("intentions", it); $("iTitle").value=""; $("cLevel").value="none"; $("cStake").value=""; $("commitBox").open=false;
+    toast(it.commitment ? "Added, and bound" : "Added");
+  } catch {}
+});
+function resolveIntent(id, action){
+  const it = state.intentions.find(x=>x.id===id); if (!it) return;
+  if (action==="done" || action==="partial") { ui.closing = { id, action, min:String(it.minutes), feel:String(it.predFeel ?? 0) }; render(); return; }
+  finalize(it, action, null);
+}
+async function finalize(it, action, actual){
+  const now = new Date().toISOString();
+  const next = {...it, trials:[...trialsOf(it), { date:it.date, p:(typeof it.pDo==="number" ? it.pDo : null), y:OUTCOME[action], at:now, committed:!!it.commitment }]};
+  if (action==="defer"){ next.deferCount = (it.deferCount||0)+1; next.date = tomorrowKey(); next.lastDeferredAt = now; }
+  else {
+    next.status = action; next.resolvedAt = now;
+    if (actual) { next.actualMinutes = actual.min; next.actualFeel = actual.feel; }
+    if (it.commitment) next.commitment = {...it.commitment, outcome:action, closedAt:now};
+  }
+  try { await save("intentions", next); ui.closing = null; toast(action==="defer" ? "Moved to tomorrow" : "Saved"); render(); } catch {}
+}
+function closingSave(skip){
+  const c = ui.closing; if (!c) return;
+  const it = state.intentions.find(x=>x.id===c.id); if (!it) { ui.closing = null; return; }
+  const actual = skip ? null : { min: Math.max(0, +$("cl-min").value || 0), feel: +$("cl-feel").value };
+  finalize(it, c.action, actual);
+}
+async function setRelease(id, on){
+  const it = state.intentions.find(x=>x.id===id); if (!it || !it.commitment) return;
+  const c = {...it.commitment}; if (on) c.releaseRequestedAt = new Date().toISOString(); else delete c.releaseRequestedAt;
+  try { await save("intentions", {...it, commitment:c}); toast(on ? "Release requested. It takes effect in 24 hours." : "Release cancelled. Still bound."); } catch {}
+}
+const released = c => !!(c && c.releaseRequestedAt && Date.now() - new Date(c.releaseRequestedAt).getTime() >= RELEASE_MS);
+
+for (const [id,out] of [["valence","valOut"],["arousal","aroOut"],["agency","agOut"]]) $(id).addEventListener("input", () => { $(out).textContent = $(id).value; if (id!=="agency") renderWords(); });
+function quadrant(v, a){ return v>0 ? (a>3?["hp"]:a<3?["lp"]:["hp","lp"]) : v<0 ? (a>3?["hn"]:a<3?["ln"]:["hn","ln"]) : ["mid"]; }
+function renderWords(){
+  const qs = quadrant(+$("valence").value, +$("arousal").value);
+  const words = qs.length===2 ? [...WORDS[qs[0]].slice(0,4), ...WORDS[qs[1]].slice(0,4)] : WORDS[qs[0]];
+  if (ui.word && !words.includes(ui.word)) ui.word = null;
+  $("wordChips").innerHTML = words.map(w => `<button type="button" class="chip" data-word="${esc(w)}" aria-pressed="${w===ui.word}">${esc(w)}</button>`).join("");
+}
+$("wordChips").addEventListener("click", e => {
+  const b = e.target.closest("[data-word]"); if (!b) return;
+  ui.word = ui.word===b.dataset.word ? null : b.dataset.word; renderWords();
+});
+renderWords();
+$("ciBtn").addEventListener("click", async () => {
+  const own = $("ciWord").value.trim().toLowerCase();
+  const c = { id:uid(), at:new Date().toISOString(), valence:+$("valence").value, arousal:+$("arousal").value, agency:+$("agency").value,
+    word: own || ui.word || "", image:$("ciImage").value.trim(),
+    intentionId:$("ciDoing").value || null, note:$("ciNote").value.trim() };
+  try { await save("checkins", c); $("ciNote").value=""; $("ciWord").value=""; $("ciImage").value=""; ui.word=null; renderWords(); toast("Check-in saved"); } catch {}
+});
+
+/* ---------- stuck ---------- */
+$("obstacleChips").innerHTML = OBSTACLES.map(([k,l]) => `<button type="button" class="chip" data-k="${k}" aria-pressed="false">${l}</button>`).join("");
+$("obstacleChips").addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  ui.obstacle = b.dataset.k;
+  $("obstacleChips").querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", String(c===b)));
+});
+function assignCondition(){
+  const counts = Object.fromEntries(CONDS.map(c=>[c,0]));
+  state.episodes.forEach(e => { if (counts[e.condition]!==undefined) counts[e.condition]++; });
+  const min = Math.min(...Object.values(counts));
+  const pool = CONDS.filter(c => counts[c]===min);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+const FALLBACK_Q = {
+  unclear:["If you had to touch this task for only two minutes, what would your hands be doing?","What is the very first thing you'd need open on your screen or desk?"],
+  toobig:["Which part of this could you finish today and call done?","What would a deliberately bad first version look like?"],
+  boring:["Why did you pick this today in the first place?","What would make the next ten minutes slightly less dull without changing the task?"],
+  fear:["What exactly would 'doing it badly' look like, and who would see it?","What would you tell a friend who was avoiding this for the same reason?"],
+  pointless:["When you added this, what did you expect it to get you?","Is it the task that feels pointless, or the way you're planning to do it?"],
+  tired:["Is this a rest problem or a starting problem?","What version of this task fits the energy you have right now?"],
+  distracted:["What were you hoping to feel when you picked up your phone?","Where could your phone be for the next twenty minutes?"],
+  other:["What is actually happening in the moment you decide not to start?","What would you need to be true to begin in the next five minutes?"]
+};
+const FALLBACK_ADVICE = {
+  unclear:"Write the next physical action on paper, start a 10-minute timer, and do only that action.",
+  toobig:"Cut it to one piece you can finish in 25 minutes. Do that piece now and stop when the timer ends.",
+  boring:"Pair it with something mildly pleasant (music without lyrics, a walk to a new spot) and do 15 minutes.",
+  fear:"Set the goal to a rough draft nobody will see. Do 10 minutes and allow it to be bad.",
+  pointless:"Write one sentence on why you chose this. If you can't, drop it honestly; if you can, start for 10 minutes.",
+  tired:"Take a 15-minute rest with no screen, then do 10 minutes of the easiest part.",
+  distracted:"Put your phone in another room, set a 20-minute timer, and start with the first line.",
+  other:"Name the smallest next action, set a 10-minute timer, and start before you think further."
+};
+const SOC_RULES = `You are the "questions only" arm of a research prototype about procrastination. The person chose a task and is now avoiding it.
+Rules:
+- Reply with one or two short questions and nothing else. No advice, suggestions, options, encouragement or praise.
+- The questions should help them find their own smallest next step, examine the reason they gave, or connect the task to why they chose it.
+- Build on what they already said. Under 40 words.
+- If they mention self-harm, suicide or being in crisis, stop asking task questions and instead say briefly and kindly that this matters more than the task and suggest contacting someone they trust or a local crisis line.`;
+const DIR_RULES = `You are the "direct advice" arm of a research prototype about procrastination. The person chose a task and is now avoiding it.
+Give exactly one concrete recommendation: the first physical action to take in the next 10 minutes and how to begin it. Plain sentences, under 60 words, no questions, no lists, no praise.
+If they mention self-harm, suicide or being in crisis, instead say briefly and kindly that this matters more than the task and suggest contacting someone they trust or a local crisis line.`;
+function context(ep){
+  const it = state.intentions.find(x=>x.id===ep.intentionId);
+  const ob = (OBSTACLES.find(o=>o[0]===ep.obstacle)||[,"not given"])[1];
+  return `Task: ${it ? it.title : "(not specified)"}${it ? ` (planned ${it.minutes} min, importance ${it.importance}/5, interest ${it.interest}/5, deferred ${it.deferCount||0} times)` : ""}
+Reason they picked: ${ob}
+In their words: ${ep.text || "(nothing written)"}`;
+}
+function addMsg(who, text){ const d=document.createElement("div"); d.className="msg "+who; d.textContent=text; $("convo").appendChild(d); return d; }
+async function ask(rules, ep, turns, fallback){
+  if (!sample) return fallback();
+  const bubble = addMsg("coach","Thinking…");
+  try {
+    const input = [{role:"user", content: rules+"\n\n"+context(ep)}, ...turns];
+    if (input[input.length-1].role !== "user") input.push({role:"user", content:"(continue)"});
+    const { text } = await sample(input, { modelTier:"quick", cache:false, onText:({text}) => { bubble.textContent = text; } });
+    bubble.textContent = text; ep.aiUsed = true; return {text, bubble};
+  } catch(e) {
+    if (["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(e && e.code)) sample = null;
+    const fb = fallback(); bubble.textContent = fb; ep.aiUsed = false; return {text:fb, bubble, fell:true};
+  }
+}
+$("stuckBtn").addEventListener("click", async () => {
+  const ep = { id:uid(), at:new Date().toISOString(), intentionId:$("sIntent").value || null, obstacle:ui.obstacle || "other",
+    text:$("sText").value.trim(), condition:assignCondition(), turns:0, revealed:false, aiUsed:false, plan:"", followup:null };
+  ui.session = { ep, convo:[] };
+  $("stuckStart").hidden = true; $("stuckSession").hidden = false; $("convo").innerHTML = "";
+  $("condLabel").textContent = "Response type for this episode: " + COND_LABEL[ep.condition];
+  $("replyBox").hidden = true; $("revealRow").hidden = true; $("planText").value = "";
+  if (ep.text) addMsg("me", ep.text);
+  if (ep.condition === "socratic") {
+    const r = await ask(SOC_RULES, ep, ui.session.convo, () => FALLBACK_Q[ep.obstacle][0]);
+    ui.session.convo.push({role:"assistant", content:r.text});
+    $("replyBox").hidden = false; $("revealRow").hidden = false; $("replyText").focus();
+  } else if (ep.condition === "directive") {
+    await ask(DIR_RULES, ep, [], () => FALLBACK_ADVICE[ep.obstacle]);
+    $("planText").focus();
+  } else {
+    addMsg("coach","Noted. Decide your next step yourself, write it below, and go.");
+    $("planText").focus();
+  }
+});
+$("replyBtn").addEventListener("click", sendReply);
+$("replyText").addEventListener("keydown", e => { if (e.key==="Enter"){ e.preventDefault(); sendReply(); } });
+async function sendReply(){
+  const s = ui.session; if (!s) return;
+  const txt = $("replyText").value.trim(); if (!txt) return;
+  $("replyText").value = ""; addMsg("me", txt);
+  s.convo.push({role:"user", content:txt}); s.ep.turns++;
+  if (s.ep.turns >= 3) { $("replyBox").hidden = true; addMsg("coach","That's three rounds. Write what you'll do in the next 30 minutes below."); return; }
+  $("replyBtn").disabled = true;
+  const r = await ask(SOC_RULES, s.ep, s.convo, () => FALLBACK_Q[s.ep.obstacle][1] || FALLBACK_Q.other[1]);
+  s.convo.push({role:"assistant", content:r.text});
+  $("replyBtn").disabled = false;
+}
+$("revealBtn").addEventListener("click", async () => {
+  const s = ui.session; if (!s || s.ep.revealed) return;
+  s.ep.revealed = true; s.ep.revealedAtTurn = s.ep.turns;
+  $("revealRow").hidden = true; $("replyBox").hidden = true;
+  const turns = s.convo.length ? [...s.convo, {role:"user", content:"Please just tell me what to do now."}] : [];
+  await ask(DIR_RULES, s.ep, turns, () => FALLBACK_ADVICE[s.ep.obstacle]);
+});
+$("closeEpisode").addEventListener("click", async () => {
+  const s = ui.session; if (!s) return;
+  s.ep.plan = $("planText").value.trim();
+  s.ep.followupDue = new Date(Date.now()+FOLLOW_MS).toISOString();
+  try { await save("episodes", s.ep); } catch { return; }
+  ui.session = null; ui.obstacle = null; $("sText").value = "";
+  $("obstacleChips").querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed","false"));
+  $("stuckSession").hidden = true; $("stuckStart").hidden = false;
+  toast("Saved. I'll ask in 30 minutes whether you started.");
+  render();
+});
+async function answerFollowup(id){
+  const ep = state.episodes.find(x=>x.id===id); if (!ep) return;
+  const box = document.querySelector(`[data-fu="${id}"]`);
+  const started = box.querySelector('input[name="st-'+id+'"]:checked');
+  if (!started) { toast("Choose yes or no first"); return; }
+  const next = {...ep, followup:{ started: started.value==="yes", autonomy:+box.querySelector(".fu-aut").value, helpful:+box.querySelector(".fu-help").value, at:new Date().toISOString() }};
+  try { await save("episodes", next); toast("Thanks, recorded"); } catch {}
+}
+
+/* ---------- scales ---------- */
+$("saveScale").addEventListener("click", async () => {
+  const items = $("scaleItems").value.split("\n").map(s=>s.trim()).filter(Boolean);
+  if (!items.length) { toast("Paste at least one item"); return; }
+  const p = {...state.profile, scale:{ name:$("scaleName").value.trim() || "Questionnaire", items, max:+$("scaleAnchors").value }};
+  try { await store.setProfile(p); toast("Items saved"); } catch { toast("Couldn't save"); }
+});
+async function submitScale(kind){
+  const sc = state.profile.scale; const resp = [];
+  for (let i=0;i<sc.items.length;i++){ const r = document.querySelector(`input[name="sc-${i}"]:checked`); if (!r){ toast("Answer every item first"); return; } resp.push(+r.value); }
+  const scored = resp.map((v,i) => /\(R\)\s*$/.test(sc.items[i]) ? (sc.max+1-v) : v);
+  const mean = scored.reduce((a,b)=>a+b,0)/scored.length;
+  const rec = { id:uid(), at:new Date().toISOString(), kind, name:sc.name, responses:resp, mean:Math.round(mean*100)/100 };
+  try { await save("scales", rec); toast("Saved, mean "+rec.mean); } catch {}
+}
+
+/* ---------- export ---------- */
+function csv(rows, cols){
+  const q = v => { const s = v==null ? "" : String(v); return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
+  return [cols.join(","), ...rows.map(r => cols.map(c => q(typeof c==="function"?c(r):r[c])).join(","))].join("\n");
+}
+function offer(filename, data){
+  try {
+    const type = filename.endsWith(".json") ? "application/json" : "text/csv";
+    const url = URL.createObjectURL(new Blob([data], {type}));
+    const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    $("exportMsg").textContent = "Downloaded " + filename;
+  } catch { $("exportMsg").textContent = "Couldn't create the file in this browser."; }
+}
+$("impFile").addEventListener("change", async e => {
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!store.importAll) { $("exportMsg").textContent = "Import needs browser storage."; return; }
+    const n = await store.importAll(data);
+    $("exportMsg").textContent = `Imported ${n} entries from ${f.name}.`;
+  } catch { $("exportMsg").textContent = "That file isn't an Agency Mirror JSON export."; }
+  e.target.value = "";
+});
+const pcode = () => (state.profile && state.profile.code) || "me";
+$("expEpisodes").addEventListener("click", () => {
+  const rows = state.episodes.map(e => ({...e, participant:pcode(), started:e.followup? (e.followup.started?1:0):"", autonomy:e.followup?e.followup.autonomy:"", helpful:e.followup?e.followup.helpful:"",
+    intention:(state.intentions.find(i=>i.id===e.intentionId)||{}).title || "" }));
+  offer(`agency-mirror-episodes-${pcode()}.csv`, csv(rows, ["participant","id","at","condition","obstacle","intention","text","turns","revealed","revealedAtTurn","aiUsed","plan","started","autonomy","helpful"]));
+});
+$("expCheckins").addEventListener("click", () => {
+  const rows = state.checkins.map(c => ({...c, participant:pcode(), doing:(state.intentions.find(i=>i.id===c.intentionId)||{}).title || ""}));
+  offer(`agency-mirror-checkins-${pcode()}.csv`, csv(rows, ["participant","id","at","valence","arousal","agency","word","image","doing","note"]));
+});
+$("expIntents").addEventListener("click", () => {
+  const rows = allTrials().map(t => ({ participant:pcode(), id:t.it.id, title:t.it.title, kind:t.it.kind||"", day:t.date, predicted:t.p, outcome:t.y,
+    importance:t.it.importance, interest:t.it.interest, plannedMin:t.it.minutes, actualMin:t.it.actualMinutes ?? "", predFeel:t.it.predFeel ?? "", actualFeel:t.it.actualFeel ?? "",
+    commitment:t.it.commitment ? t.it.commitment.level : "", finalStatus:t.it.status }));
+  offer(`agency-mirror-intentions-${pcode()}.csv`, csv(rows, ["participant","id","title","kind","day","predicted","outcome","importance","interest","plannedMin","actualMin","predFeel","actualFeel","commitment","finalStatus"]));
+});
+$("expAll").addEventListener("click", () => offer(`agency-mirror-${pcode()}.json`, JSON.stringify({exportedAt:new Date().toISOString(), ...state}, null, 2)));
+
+/* ---------- render ---------- */
+function render(){
+  const consent = needsConsent();
+  $("consentPanel").hidden = !consent;
+  for (const n of TABS) $("panel-"+n).hidden = consent || n!==ui.tab;
+  if (consent) return;
+  // keep what's typed in an open "how did it go" form across re-renders
+  if (ui.closing && $("cl-min")) { ui.closing.min = $("cl-min").value; ui.closing.feel = $("cl-feel").value; }
+  const today = dayKey();
+  const open = state.intentions.filter(i => i.status==="open" && i.date <= today).sort((a,b)=>(b.importance-a.importance)||a.createdAt.localeCompare(b.createdAt));
+  const closedToday = state.intentions.filter(i => i.status!=="open" && (i.resolvedAt||"").slice(0,10)===today);
+
+  // today list
+  const feelOpts = sel => [-3,-2,-1,0,1,2,3].map(v => `<option value="${v}"${String(v)===String(sel)?" selected":""}>${v>0?"+"+v:v}</option>`).join("");
+  const li = it => {
+    const tag = it.status!=="open" ? `<span class="pill ${it.status}">${it.status==="partial"?"partly":it.status}</span>` : (it.deferCount ? `<span class="pill defer">pushed ×${it.deferCount}</span>` : "");
+    const c = it.commitment;
+    let bound = "";
+    if (c) {
+      const rel = released(c), pending = c.releaseRequestedAt && !rel;
+      const until = pending ? fmtTime(new Date(new Date(c.releaseRequestedAt).getTime()+RELEASE_MS).toISOString()) : "";
+      bound = `<span class="pill bound">${rel ? "released" : "bound: "+COMMIT_LABEL[c.level]}</span>`;
+      if (it.status==="open" && !rel) bound += pending
+        ? ` <span>release takes effect ${esc(until)}</span> <button class="btn small" data-unrelease="${it.id}">Keep it</button>`
+        : ` <button class="btn small" data-release="${it.id}">Release</button>`;
+    }
+    const pred = typeof it.pDo==="number" ? `<span>forecast ${Math.round(it.pDo*100)}%</span>` : "";
+    const acts = it.status==="open" ? `<div class="acts">
+      <button class="btn small" data-act="done" data-id="${it.id}">Done</button>
+      <button class="btn small" data-act="partial" data-id="${it.id}">Partly</button>
+      <button class="btn small" data-act="defer" data-id="${it.id}">Not today</button>
+      <button class="btn small" data-act="dropped" data-id="${it.id}">Drop</button></div>` : "<div></div>";
+    const stakeLine = c && c.stake && it.status==="open" ? `<div class="hint">${esc(c.stake)}${c.partner ? " · with "+esc(c.partner) : ""}</div>` : "";
+    const closing = ui.closing && ui.closing.id===it.id ? `<div class="closing">
+      <label for="cl-min">Minutes it actually took<input type="number" id="cl-min" min="0" max="900" step="5" value="${esc(ui.closing.min)}"></label>
+      <label for="cl-feel">How you feel now (−3 to +3)<select id="cl-feel">${feelOpts(ui.closing.feel)}</select></label>
+      <button class="btn primary small" data-closesave="1">Save</button>
+      <button class="btn small" data-closeskip="1">Skip details</button>
+      <button class="btn small" data-closecancel="1">Cancel</button></div>` : "";
+    return `<li><div><div class="title">${esc(it.title)}</div><div class="meta"><span>${it.minutes} min</span><span>matters ${it.importance}/5</span><span>interest ${it.interest}/5</span>${pred}${tag}${bound}</div>${stakeLine}</div>${acts}${closing}</li>`;
+  };
+  $("todayList").innerHTML = [...open, ...closedToday].map(li).join("");
+  $("todayEmpty").hidden = open.length + closedToday.length > 0;
+
+  // alerts: important + deferred >= 3
+  const flagged = state.intentions.filter(i => i.status==="open" && (i.deferCount||0) >= 3 && i.importance >= 4);
+  $("alerts").innerHTML = flagged.map(i => `<div class="alert"><strong>Pushed back ${i.deferCount} times:</strong> ${esc(i.title)}. You rated it ${i.importance}/5 for mattering. Do 10 minutes of it now, shrink it, or drop it on purpose.</div>`).join("");
+
+  // selects
+  const opts = open.map(i => `<option value="${i.id}">${esc(i.title)}</option>`).join("");
+  const keep = (sel, extra) => { const v = $(sel).value; $(sel).innerHTML = extra + opts; if ([...$(sel).options].some(o=>o.value===v)) $(sel).value = v; };
+  keep("ciDoing", `<option value="">Something not on my list</option>`);
+  keep("sIntent", `<option value="">Not one of my listed intentions</option>`);
+
+  // follow-ups due
+  const now = Date.now();
+  const due = state.episodes.filter(e => !e.followup && new Date(e.followupDue||e.at).getTime() <= now).sort((a,b)=>a.at.localeCompare(b.at));
+  $("followCount").hidden = !due.length; $("followCount").textContent = due.length;
+  const fu = ep => {
+    const it = state.intentions.find(i=>i.id===ep.intentionId);
+    return `<div class="sheet" data-fu="${ep.id}"><h3>Follow-up · ${fmtTime(ep.at)} · ${COND_LABEL[ep.condition]}</h3>
+      <div class="title">${esc(it ? it.title : "Unlisted task")}${ep.plan ? ` <span class="hint">· you planned: ${esc(ep.plan)}</span>`:""}</div>
+      <div class="row"><span>Did you start within 30 minutes?</span>
+        <label style="display:flex;gap:4px;align-items:center;flex:0 0 auto;color:var(--ink)"><input type="radio" name="st-${ep.id}" value="yes"> Yes</label>
+        <label style="display:flex;gap:4px;align-items:center;flex:0 0 auto;color:var(--ink)"><input type="radio" name="st-${ep.id}" value="no"> No</label></div>
+      <div class="row">
+        <div class="scale"><label>"What I did next was my own decision" (1–7)<input class="fu-aut" type="range" min="1" max="7" value="4"></label><div class="ends"><span>not at all</span><span>completely</span></div></div>
+        <div class="scale"><label>"That response helped" (1–7)<input class="fu-help" type="range" min="1" max="7" value="4"></label><div class="ends"><span>not at all</span><span>a lot</span></div></div>
+      </div>
+      <div class="row"><button class="btn primary" data-fuid="${ep.id}">Record</button></div></div>`;
+  };
+  $("followups").innerHTML = due.map(fu).join("");
+
+  if (ui.tab==="today" && document.activeElement !== $("iCat")) updatePriorHint();
+  if (ui.tab==="patterns") renderPatterns();
+  if (ui.tab==="decide") renderDecideList();
+  if (ui.tab==="study") renderStudy();
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-act]"); if (a) resolveIntent(a.dataset.id, a.dataset.act);
+  if (e.target.closest("[data-closesave]")) closingSave(false);
+  if (e.target.closest("[data-closeskip]")) closingSave(true);
+  if (e.target.closest("[data-closecancel]")) { ui.closing = null; render(); }
+  const r1 = e.target.closest("[data-release]"); if (r1) setRelease(r1.dataset.release, true);
+  const r2 = e.target.closest("[data-unrelease]"); if (r2) setRelease(r2.dataset.unrelease, false);
+  const f = e.target.closest("[data-fuid]"); if (f) answerFollowup(f.dataset.fuid);
+  const s = e.target.closest("[data-scale]"); if (s) submitScale(s.dataset.scale);
+});
+setInterval(() => { if (!needsConsent()) render(); }, 60000);
+
+function renderPatterns(){
+  const eps = state.episodes;
+  const answered = eps.filter(e => e.followup);
+  const allInt = state.intentions;
+  const closed = allInt.filter(i => i.status!=="open");
+  const doneRate = closed.length ? Math.round(100*closed.filter(i=>i.status==="done").length/closed.length) : null;
+  const deferTotal = allInt.reduce((a,i)=>a+(i.deferCount||0),0);
+  const avgAg = state.checkins.length ? (state.checkins.reduce((a,c)=>a+c.agency,0)/state.checkins.length).toFixed(1) : "–";
+  const soc = eps.filter(e=>e.condition==="socratic");
+  const revealRate = soc.length ? Math.round(100*soc.filter(e=>e.revealed).length/soc.length)+"%" : "–";
+  $("stats").innerHTML = [
+    [doneRate==null?"–":doneRate+"%","of closed intentions done"],
+    [deferTotal,"times something was pushed"],
+    [avgAg,"average sense of agency (1–7)"],
+    [revealRate,"asked to 'just tell me' during questions"]
+  ].map(([b,s]) => `<div class="stat"><b>${b}</b><span>${s}</span></div>`).join("");
+
+  $("condBars").innerHTML = CONDS.map(c => {
+    const g = answered.filter(e=>e.condition===c); const n = g.length;
+    const r = n ? g.filter(e=>e.followup.started).length/n : 0;
+    const aut = n ? (g.reduce((a,e)=>a+e.followup.autonomy,0)/n).toFixed(1) : "–";
+    return `<div class="bar-row"><span>${COND_LABEL[c]}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(r*100)}%;background:${COND_VAR[c]}"></div></div><span class="num">${n?Math.round(r*100)+"%":"–"} · n=${n}<br>own ${aut}</span></div>`;
+  }).join("");
+  const minN = Math.min(...CONDS.map(c => answered.filter(e=>e.condition===c).length));
+  $("condNote").textContent = minN < 10 ? `Under 10 answered episodes in at least one group (smallest: ${minN}). Treat these bars as noise until each reaches about 10–15.` : `"own" is the average of "what I did next was my own decision" (1–7).`;
+
+  // mood chart
+  const cs = [...state.checkins].sort((a,b)=>a.at.localeCompare(b.at)).slice(-40);
+  if (cs.length < 2) { $("moodChart").innerHTML = `<div class="empty">The chart appears after two check-ins. It plots mood (−3 to +3) and sense of agency (1–7, rescaled) over time.</div>`; }
+  else {
+    const W=640,H=180,L=34,R=10,T=10,B=24, w=W-L-R, h=H-T-B;
+    const x = i => L + (cs.length===1?w/2:i*w/(cs.length-1));
+    const yV = v => T + h*(1-(v+3)/6);
+    const yA = v => T + h*(1-(v-1)/6);
+    const path = (arr,f) => arr.map((c,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+f(c).toFixed(1)).join(" ");
+    let grid = ""; for (const v of [-3,0,3]) grid += `<line x1="${L}" x2="${W-R}" y1="${yV(v)}" y2="${yV(v)}" stroke="var(--rule)"/><text x="${L-6}" y="${yV(v)+3}" text-anchor="end">${v>0?"+"+v:v}</text>`;
+    const first = fmtTime(cs[0].at), last = fmtTime(cs[cs.length-1].at);
+    $("moodChart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="min-width:420px" role="img" aria-label="Mood and agency over the last ${cs.length} check-ins">
+      ${grid}
+      <path d="${path(cs,c=>yA(c.agency))}" fill="none" stroke="var(--c-dir)" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <path d="${path(cs,c=>yV(c.valence))}" fill="none" stroke="var(--accent)" stroke-width="2"/>
+      <circle cx="${x(cs.length-1)}" cy="${yV(cs[cs.length-1].valence)}" r="3.5" fill="var(--accent)"/>
+      <text x="${L}" y="${H-6}">${esc(first)}</text><text x="${W-R}" y="${H-6}" text-anchor="end">${esc(last)}</text>
+      <text x="${W-R}" y="${T+8}" text-anchor="end">— mood   - - agency</text></svg>`;
+  }
+
+  // obstacles
+  const tally = OBSTACLES.map(([k,l]) => [l, eps.filter(e=>e.obstacle===k).length]).filter(x=>x[1]).sort((a,b)=>b[1]-a[1]);
+  const mx = Math.max(1, ...tally.map(t=>t[1]));
+  $("obstacleBars").innerHTML = tally.length ? tally.map(([l,n]) => `<div class="bar-row"><span>${esc(l)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(100*n/mx)}%;background:var(--ink)"></div></div><span class="num">${n}</span></div>`).join("")
+    : `<div class="empty">Each time you press "Help me start", the reason you pick is counted here.</div>`;
+
+  renderPredictions(); renderKinds(); renderDrivers(); renderWordStats(); renderCommitStats();
+}
+
+const pct = x => (x==null || isNaN(x)) ? "–" : Math.round(x*100)+"%";
+const barRow = (label, frac, right, color, tick) => `<div class="bar-row"><span>${esc(label)}</span><div class="bar-track">${frac==null?"":`<div class="bar-fill" style="width:${Math.round(frac*100)}%;background:${color}"></div>`}${tick==null?"":`<div class="tick" style="left:${(tick*100).toFixed(1)}%"></div>`}</div><span class="num">${right}</span></div>`;
+
+function renderPredictions(){
+  const tr = allTrials().filter(t => typeof t.p==="number");
+  const B = M.brier(tr);
+  const fin = state.intentions.filter(i => i.status==="done" || i.status==="partial");
+  const ratios = fin.filter(i => i.actualMinutes>0 && i.minutes>0).map(i => i.actualMinutes/i.minutes);
+  const pr = M.median(ratios);
+  const fe = fin.filter(i => typeof i.predFeel==="number" && typeof i.actualFeel==="number").map(i => i.actualFeel - i.predFeel);
+  const feM = fe.length ? M.mean(fe) : null;
+  $("predStats").innerHTML = [
+    [B ? B.brier.toFixed(3) : "–", B ? `Brier score over ${B.n} forecasts (0 is perfect)` : "Brier score (appears after forecasts)"],
+    [B && B.skill!=null ? (B.skill>=0?"+":"")+B.skill.toFixed(2) : "–", "skill vs. always guessing your average"],
+    [ratios.length ? "×"+pr.toFixed(2) : "–", ratios.length ? `planning ratio, median of ${ratios.length}` : "planning ratio (actual ÷ planned)"],
+    [feM==null ? "–" : (feM>=0?"+":"")+feM.toFixed(1), fe.length ? `feeling error over ${fe.length} (actual − expected)` : "feeling error (actual − expected)"]
+  ].map(([b,s]) => `<div class="stat"><b>${b}</b><span>${s}</span></div>`).join("");
+  const cal = M.calibration(tr);
+  $("calBars").innerHTML = cal.map(c => barRow(c.label, c.n ? c.actual : null, c.n ? `${pct(c.actual)} vs ${pct(c.pred)}<br>n=${c.n}` : "n=0", "var(--accent)", c.n ? c.pred : null)).join("");
+  let note;
+  if (!B) note = "Give each intention a forecast and close it honestly. Scores appear after the first closed trial.";
+  else if (B.n < 20) note = `Only ${B.n} forecasts so far. Calibration needs about 20–30 before the pattern is more than noise.`;
+  else {
+    const over = cal.filter(c => c.n>=5 && c.pred-c.actual > 0.15).map(c => c.label.split(" ")[0].toLowerCase());
+    const under = cal.filter(c => c.n>=5 && c.actual-c.pred > 0.15).map(c => c.label.split(" ")[0].toLowerCase());
+    note = over.length ? `You're overconfident in your ${over.join(" and ")} forecasts: those tasks happen noticeably less often than you predict.` : under.length ? `You're underconfident in your ${under.join(" and ")} forecasts: you follow through more than you expect.` : "Your forecasts are roughly calibrated where you have enough data.";
+    if (B.skill!=null && B.skill < 0) note += " Right now your gut forecasts do worse than simply using your average. Lean on the 'your record' hint when you add intentions.";
+  }
+  if (fe.length>=8 && feM>=0.75) note += " Tasks feel better afterwards than you expect, so dread is overpricing them.";
+  if (fe.length>=8 && feM<=-0.75) note += " Tasks feel worse afterwards than you expect. Check whether the day is overloaded.";
+  if (ratios.length>=8 && pr>=1.3) note += ` Tasks take about ${pr.toFixed(1)}× the time you plan, so scale your estimates up.`;
+  $("predNote").textContent = note;
+}
+
+function renderKinds(){
+  const rows = Object.keys(KINDS).map(k => [k, kindRecord(k)]).filter(([,r]) => r.n).sort((a,b) => b[1].n - a[1].n);
+  $("kindTable").innerHTML = rows.length
+    ? `<div class="chartbox"><table class="grid"><thead><tr><th>Kind</th><th>Tries</th><th>Done (partly = ½)</th><th>Estimate</th><th>80% range</th></tr></thead><tbody>${rows.map(([k,r]) => `<tr><td>${esc(KINDS[k])}</td><td class="n">${r.n}</td><td class="n">${fmtN(r.succ)}</td><td class="n">${pct(r.mean)}</td><td class="n">${pct(r.lo)}–${pct(r.hi)}</td></tr>`).join("")}</tbody></table></div>`
+    : `<div class="empty">Each closed intention adds to the record for its kind. The range starts wide and narrows as evidence builds.</div>`;
+}
+
+function renderDrivers(){
+  const stated = state.profile && typeof state.profile.statedImp==="number" ? state.profile.statedImp : 50;
+  if (document.activeElement !== $("statedImp")) $("statedImp").value = stated;
+  $("statedOut").textContent = $("statedImp").value; $("statedOut2").textContent = 100 - +$("statedImp").value;
+  const tr = allTrials();
+  const tbl = (key, label) => `<div><h3>Follow-through by "${label}" rating</h3><div class="bars">${[1,2,3,4,5].map(l => {
+      const g = tr.filter(t => t.it[key]===l), r = g.length ? M.mean(g.map(t=>t.y)) : null;
+      return barRow(label+" "+l, r, `${pct(r)} · n=${g.length}`, "var(--ink)", null); }).join("")}</div></div>`;
+  $("driverTables").innerHTML = tr.length ? tbl("importance","matters") + tbl("interest","interest") : "";
+  if (tr.length < 12) { $("driverVerdict").textContent = `Needs at least 12 closed trials (you have ${tr.length}). Then this compares what you say should drive you with what actually predicts your follow-through.`; return; }
+  const fit = M.logistic(tr.map(t => ({ x:[t.it.importance, t.it.interest], y:t.y })));
+  if (!fit.ok[0] || !fit.ok[1]) { $("driverVerdict").textContent = `Every intention has the same ${!fit.ok[0] ? "importance" : "interest"} rating, so its effect can't be separated. Use the full 1–5 range.`; return; }
+  const bi = fit.b[1], bn = fit.b[2], tot = (Math.abs(bi)+Math.abs(bn)) || 1;
+  const rev = Math.round(100*Math.abs(bi)/tot);
+  const orI = Math.exp(bi/fit.sd[0]), orN = Math.exp(bn/fit.sd[1]);
+  let v = `Revealed split: importance ${rev} / interest ${100-rev}. Stated: ${stated} / ${100-stated}. Each extra point of importance multiplies your odds of following through by ${orI.toFixed(2)}, and each point of interest by ${orN.toFixed(2)}. `;
+  const gap = rev - stated;
+  if (Math.abs(gap) >= 20) v += gap < 0 ? "You act on interest more than you say you do. Pair what matters with something that pulls you, or shrink it until starting is easy." : "You act on importance more than you say. Interest may matter less to your follow-through than you think.";
+  else v += "What you say and what you do roughly agree.";
+  if (bi < 0) v += " Higher importance goes with less follow-through, which is the signature of avoiding what matters most.";
+  if (tr.length < 50) v += ` (Rough: based on ${tr.length} trials.)`;
+  $("driverVerdict").textContent = v;
+}
+$("statedImp").addEventListener("input", () => { $("statedOut").textContent = $("statedImp").value; $("statedOut2").textContent = 100 - +$("statedImp").value; });
+$("statedImp").addEventListener("change", async () => { if (!store) return; try { await store.setProfile({...state.profile, statedImp:+$("statedImp").value}); } catch { toast("Couldn't save"); } });
+
+function renderWordStats(){
+  const w = state.checkins.filter(c => c.word).map(c => c.word.toLowerCase());
+  if (!w.length) { $("wordStats").innerHTML = `<div class="empty">Pick a word in your next check-in. Your most-used words and a rough granularity figure appear here.</div>`; return; }
+  const tally = {}; w.forEach(x => tally[x] = (tally[x]||0)+1);
+  const top = Object.entries(tally).sort((a,b)=>b[1]-a[1]).slice(0,10), mx = top[0][1], distinct = Object.keys(tally).length;
+  $("wordStats").innerHTML = `<p class="hint">${distinct} distinct words across ${w.length} check-ins · granularity ${(distinct/w.length).toFixed(2)}</p><div class="bars">${top.map(([k,n]) => barRow(k, n/mx, String(n), "var(--accent)", null)).join("")}</div>`;
+}
+
+function renderCommitStats(){
+  if (!state.intentions.some(i => i.commitment)) { $("commitStats").innerHTML = `<div class="empty">You haven't bound any intentions. That's a fine default. If something keeps getting pushed, try the lightest level first.</div>`; return; }
+  const tr = allTrials();
+  const lv = t => t.it.commitment ? t.it.commitment.level : "none";
+  const rows = [["Not bound","none"],["Pledge","pledge"],["Partner","partner"],["Stake","stake"]].map(([l,k]) => { const g = tr.filter(t => lv(t)===k); const r = g.length ? M.mean(g.map(t=>t.y)) : null; return barRow(l, r, `${pct(r)} · n=${g.length}`, "var(--accent)", null); }).join("");
+  const now = Date.now(), D = 864e5;
+  const share = (a,b) => { const g = state.intentions.filter(i => { const t = now - new Date(i.createdAt).getTime(); return t>=a*D && t<b*D; }); return g.length ? g.filter(i=>i.commitment).length/g.length : null; };
+  const recent = share(0,14), prior = share(14,28);
+  $("commitStats").innerHTML = `<div class="bars">${rows}</div><p class="hint">Share of new intentions you bound: last 14 days ${pct(recent)}${prior!=null ? `, the 14 days before ${pct(prior)}` : ""}.</p>`;
+}
+
+/* ---------- decide ---------- */
+const KEENEY = [
+  "If money or another constraint weren't an issue, what would you choose? What objective does that reveal?",
+  "Picture yourself a year after choosing badly. What went wrong?",
+  "What would the person you most admire care about here?",
+  "What do people who'd choose differently from your instinct care about?",
+  "Is any objective only a means to another? Write down the end instead."
+];
+function newDecision(){ return { id:uid(), name:"", missing:"", options:["",""], criteria:[{name:"",lo:3,hi:7},{name:"",lo:3,hi:7}], scores:[[5,5],[5,5]], rough:true, gut:"", outcome:"", satisfaction:"", result:null, createdAt:new Date().toISOString() }; }
+const optName = (d,i) => d.options[i] || "Option "+(i+1);
+const wOpts = sel => Array.from({length:11},(_,v) => `<option value="${v}"${v===+sel?" selected":""}>${v}</option>`).join("");
+function buildEditor(){
+  const d = ui.dec; ui.decBuilt = true;
+  const crit = d.criteria.map((c,i) => `<tr><td><input type="text" data-c="${i}" data-k="name" value="${esc(c.name)}" maxlength="60" placeholder="e.g. Total cost" aria-label="Objective ${i+1}"></td>
+    <td><select data-c="${i}" data-k="lo" aria-label="Lowest weight for objective ${i+1}">${wOpts(c.lo)}</select></td>
+    <td><select data-c="${i}" data-k="hi" aria-label="Highest weight for objective ${i+1}">${wOpts(c.hi)}</select></td>
+    <td><button class="btn small" data-delc="${i}" aria-label="Remove objective ${i+1}"${d.criteria.length<2?" disabled":""}>×</button></td></tr>`).join("");
+  const opts = d.options.map((o,i) => `<tr><td><input type="text" data-o="${i}" value="${esc(o)}" maxlength="60" placeholder="e.g. Warsaw Cognitive Science" aria-label="Option ${i+1}"></td>
+    <td style="width:3em"><button class="btn small" data-delo="${i}" aria-label="Remove option ${i+1}"${d.options.length<3?" disabled":""}>×</button></td></tr>`).join("");
+  const head = d.criteria.map((c,i) => `<th data-ch="${i}">${esc(c.name || "Objective "+(i+1))}</th>`).join("");
+  const matrix = d.options.map((o,oi) => `<tr><td data-oh="${oi}">${esc(optName(d,oi))}</td>${d.criteria.map((c,ci) => `<td><input type="number" min="0" max="10" step="1" data-s="${oi},${ci}" value="${d.scores[oi][ci]}" aria-label="Score for option ${oi+1} on objective ${ci+1}"></td>`).join("")}</tr>`).join("");
+  const gutOpts = `<option value="">Pick before you run it</option>` + d.options.map((o,i) => `<option value="${i}"${String(i)===String(d.gut)?" selected":""}>${esc(optName(d,i))}</option>`).join("");
+  $("decEditor").innerHTML = `
+    <label for="decName">The decision<input type="text" id="decName" data-f="name" value="${esc(d.name)}" maxlength="100" placeholder="e.g. Where to do my master's"></label>
+    <div><h3>1 · Find the objectives you forgot</h3>
+      <p class="hint">People asked for their objectives tend to miss many they later agree matter (Bond, Carlson and Keeney, 2008). Run through these before listing options:</p>
+      <ul class="hint" style="margin:4px 0 8px;padding-left:18px">${KEENEY.map(k => `<li>${esc(k)}</li>`).join("")}</ul>
+      <label for="decMissing">Objectives these questions surfaced<textarea id="decMissing" data-f="missing" maxlength="600">${esc(d.missing)}</textarea></label></div>
+    <div><h3>2 · Objectives, and how much each might matter (0–10)</h3>
+      <p class="hint">Give a range, not a number. If you're sure, set both ends the same. If cost might matter anywhere from 3 to 9, say exactly that.</p>
+      <div class="chartbox"><table class="grid"><thead><tr><th>Objective</th><th>At least</th><th>At most</th><th></th></tr></thead><tbody>${crit}</tbody></table></div>
+      <div class="row"><button class="btn small" data-addc="1">Add objective</button></div></div>
+    <div><h3>3 · Options</h3>
+      <div class="chartbox"><table class="grid"><tbody>${opts}</tbody></table></div>
+      <div class="row"><button class="btn small" data-addo="1">Add option</button></div></div>
+    <div><h3>4 · Rate each option on each objective (0 worst, 10 best)</h3>
+      <p class="hint">Every rating means "how good is this option on this objective", so a cheap option rates high on cost.</p>
+      <div class="chartbox"><table class="grid"><thead><tr><th>Option</th>${head}</tr></thead><tbody>${matrix}</tbody></table></div>
+      <label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="decRough" data-f="rough"${d.rough?" checked":""}> My ratings are rough (add ±1 noise to each)</label></div>
+    <div><h3>5 · Before you run it: your gut call</h3>
+      <label for="decGut">Which do you expect to win?<select id="decGut" data-f="gut">${gutOpts}</select></label></div>
+    <div class="row"><button class="btn primary" data-run="1">Run 4,000 weightings</button><button class="btn" data-decsave="1">Save</button><button class="btn" data-decnew="1">New decision</button></div>
+    <details class="math"><summary>The math: stochastic multicriteria acceptability analysis</summary>
+      <p>Ordinary weighted scoring (the MAUT you ran before) needs exact weights, which you rarely know. SMAA (Lahdelma and colleagues) treats each weight as unknown within the range you gave:</p>
+      <ol><li>Draw each weight at random from its range, then divide by the total so the weights add up to 1.</li>
+      <li>Score every option as Σ weight × rating. If "rough" is ticked, each rating also gets a random nudge between −1 and +1.</li>
+      <li>Record which option came first, second and so on.</li>
+      <li>Repeat 4,000 times. An option's win rate is the share of draws in which it came first.</li></ol>
+      <p>A win rate near 100% means the choice survives your uncertainty. Close win rates mean the answer depends on weights you haven't pinned down. The pivotal objective is the one whose weight differs most between draws the leader wins and draws it loses, so it's the one to think hardest about. The mid-weight score is plain MAUT with every weight at the middle of its range, for comparison.</p>
+    </details>`;
+  if (d.result) showResult(); else $("decResult").hidden = true;
+}
+function decInput(e){
+  const t = e.target, d = ui.dec; if (!d) return;
+  if (t.dataset.f) { d[t.dataset.f] = t.dataset.f==="rough" ? t.checked : t.value; return; }
+  if (t.dataset.c != null) {
+    const i = +t.dataset.c, k = t.dataset.k; d.criteria[i][k] = k==="name" ? t.value : +t.value;
+    if (k==="name") { const h = document.querySelector(`[data-ch="${i}"]`); if (h) h.textContent = t.value || "Objective "+(i+1); }
+    return;
+  }
+  if (t.dataset.o != null) {
+    const i = +t.dataset.o; d.options[i] = t.value;
+    const h = document.querySelector(`[data-oh="${i}"]`); if (h) h.textContent = optName(d,i);
+    const g = $("decGut"); if (g && g.options[i+1]) g.options[i+1].textContent = optName(d,i);
+    return;
+  }
+  if (t.dataset.s) { const [o,c] = t.dataset.s.split(",").map(Number); d.scores[o][c] = Math.max(0, Math.min(10, +t.value || 0)); }
+}
+$("decEditor").addEventListener("input", decInput);
+$("decEditor").addEventListener("change", decInput);
+$("decEditor").addEventListener("click", e => {
+  const d = ui.dec; if (!d) return;
+  const hit = sel => e.target.closest(sel);
+  if (hit("[data-addc]")) { d.criteria.push({name:"",lo:3,hi:7}); d.scores.forEach(r => r.push(5)); d.result = null; buildEditor(); }
+  else if (hit("[data-addo]")) { d.options.push(""); d.scores.push(d.criteria.map(() => 5)); d.result = null; buildEditor(); }
+  else if (hit("[data-delc]")) { const i = +hit("[data-delc]").dataset.delc; if (d.criteria.length < 2) return; d.criteria.splice(i,1); d.scores.forEach(r => r.splice(i,1)); d.result = null; buildEditor(); }
+  else if (hit("[data-delo]")) {
+    const i = +hit("[data-delo]").dataset.delo; if (d.options.length < 3) return;
+    d.options.splice(i,1); d.scores.splice(i,1);
+    if (String(d.gut)===String(i)) d.gut = ""; else if (d.gut!=="" && +d.gut > i) d.gut = String(+d.gut - 1);
+    d.result = null; buildEditor();
+  }
+  else if (hit("[data-run]")) runDecision();
+  else if (hit("[data-decsave]")) saveDecision();
+  else if (hit("[data-decnew]")) { ui.dec = newDecision(); buildEditor(); }
+});
+function runDecision(){
+  const d = ui.dec;
+  if (d.criteria.every(c => Math.max(c.lo,c.hi) === 0)) { toast("Give at least one objective a weight above 0"); return; }
+  const r = M.smaa(d.options, d.criteria, d.scores, { N:4000, rough:d.rough });
+  if (!r) { toast("Nothing to compare yet"); return; }
+  d.result = { winPct:r.winPct, rankPct:r.rankPct, winner:r.winner, pivot:r.pivot, midScore:r.midScore, at:new Date().toISOString() };
+  showResult();
+  $("decResult").scrollIntoView({block:"nearest"});
+}
+function showResult(){
+  const d = ui.dec, r = d.result; if (!r) return;
+  const order = r.winPct.map((p,i) => [p,i]).sort((a,b) => b[0]-a[0]);
+  const O = d.options.length, ord = k => k+1 + (k===0?"st":k===1?"nd":k===2?"rd":"th");
+  const bars = order.map(([p,i]) => barRow(optName(d,i), p, `${Math.round(p*100)}% wins`, "var(--accent)", null)).join("");
+  const rankTbl = `<div class="chartbox"><table class="grid"><thead><tr><th>Option</th>${Array.from({length:O},(_,k) => `<th>${ord(k)}</th>`).join("")}<th>Mid-weight score</th></tr></thead><tbody>${order.map(([,i]) => `<tr><td>${esc(optName(d,i))}</td>${r.rankPct[i].map(p => `<td class="n">${Math.round(p*100)}%</td>`).join("")}<td class="n">${r.midScore[i].toFixed(2)}</td></tr>`).join("")}</tbody></table></div>`;
+  const lead = order[0], second = order[1];
+  let v = `${esc(optName(d,lead[1]))} comes first in ${Math.round(lead[0]*100)}% of the weightings you said you'd accept.`;
+  if (lead[0] >= 0.8) v += " That's robust: your uncertainty about the weights barely changes the answer.";
+  else if (second && lead[0]-second[0] < 0.15) v += ` It's close with ${esc(optName(d,second[1]))} (${Math.round(second[0]*100)}%), so the answer depends on weights you haven't pinned down.`;
+  if (r.pivot) v += ` Pivotal objective: <b>${esc(d.criteria[r.pivot.criterion] ? (d.criteria[r.pivot.criterion].name || "Objective "+(r.pivot.criterion+1)) : "")}</b>. The leader wins more often when it's weighted ${r.pivot.diff > 0 ? "higher" : "lower"}. Settle how much it really matters first.`;
+  if (d.gut !== "" && d.gut != null) {
+    const g = +d.gut;
+    v += g === lead[1] ? " Your gut call agreed." : ` Your gut picked ${esc(optName(d,g))}, which wins ${Math.round((r.winPct[g]||0)*100)}% of the time. A gap between gut and model usually means an objective is missing or a weight is off. Ask what your gut knows that the table doesn't.`;
+  }
+  $("decResult").hidden = false;
+  $("decResult").innerHTML = `<h3>Result · ${esc(fmtTime(r.at))}</h3><p class="verdict">${v}</p><div class="bars">${bars}</div>${rankTbl}
+    <div><h3>Later: how did it turn out?</h3>
+    <div class="row"><label for="decOutcome" style="flex:3 1 260px">What you chose and how it went<input type="text" id="decOutcome" data-f="outcome" maxlength="300" value="${esc(d.outcome)}"></label>
+    <label for="decSat">Satisfaction (1–7)<select id="decSat" data-f="satisfaction"><option value="">–</option>${[1,2,3,4,5,6,7].map(n => `<option${String(n)===String(d.satisfaction)?" selected":""}>${n}</option>`).join("")}</select></label>
+    <button class="btn" data-decsave2="1">Save</button></div></div>`;
+}
+$("decResult").addEventListener("input", decInput);
+$("decResult").addEventListener("change", decInput);
+$("decResult").addEventListener("click", e => { if (e.target.closest("[data-decsave2]")) saveDecision(); });
+async function saveDecision(){
+  const d = ui.dec; if (!d) return;
+  if (!String(d.name).trim()) { toast("Name the decision first"); if ($("decName")) $("decName").focus(); return; }
+  try { await save("decisions", {...d, updatedAt:new Date().toISOString()}); toast("Decision saved"); } catch {}
+}
+function renderDecideList(){
+  const list = [...state.decisions].sort((a,b) => (b.updatedAt||"").localeCompare(a.updatedAt||""));
+  $("decEmpty").hidden = list.length > 0;
+  $("decList").innerHTML = list.map(d => {
+    const r = d.result, lead = r ? optName(d, r.winner) : null, hasGut = d.gut!=="" && d.gut!=null;
+    return `<li><div><div class="title">${esc(d.name)}</div><div class="meta">${lead ? `<span>model: ${esc(lead)} ${Math.round(r.winPct[r.winner]*100)}%</span>` : "<span>not run</span>"}${hasGut ? `<span>gut: ${esc(optName(d,+d.gut))}</span>` : ""}${d.satisfaction ? `<span>satisfaction ${esc(d.satisfaction)}/7</span>` : ""}<span>${esc(fmtTime(d.updatedAt||d.createdAt))}</span></div></div>
+      <div class="acts"><button class="btn small" data-decload="${d.id}">Open</button><button class="btn small" data-decdel="${d.id}">Delete</button></div></li>`;
+  }).join("");
+}
+$("decList").addEventListener("click", async e => {
+  const l = e.target.closest("[data-decload]");
+  if (l) { const d = state.decisions.find(x => x.id===l.dataset.decload); if (d) { ui.dec = JSON.parse(JSON.stringify(d)); buildEditor(); $("decEditor").scrollIntoView({block:"start"}); } return; }
+  const x = e.target.closest("[data-decdel]");
+  if (x) {
+    if (x.dataset.armed) { try { await store.del("decisions", x.dataset.decdel); toast("Deleted"); } catch { toast("Couldn't delete"); } }
+    else { x.dataset.armed = "1"; x.textContent = "Confirm delete"; }
+  }
+});
+
+function renderStudy(){
+  const sc = state.profile && state.profile.scale;
+  if (sc && document.activeElement !== $("scaleItems") && !$("scaleItems").value) { $("scaleItems").value = sc.items.join("\n"); $("scaleName").value = sc.name; $("scaleAnchors").value = String(sc.max); }
+  if (sc && sc.items.length) {
+    const head = Array.from({length:sc.max},(_,k)=>k+1);
+    $("scaleRun").innerHTML = `<h3>${esc(sc.name)} · 1 = not at all true of me, ${sc.max} = completely true</h3>
+      <div class="chartbox"><table class="items"><tbody>${sc.items.map((it,i)=>`<tr><td>${i+1}. ${esc(it)}</td><td><div class="likert">${head.map(v=>`<label><input type="radio" name="sc-${i}" value="${v}">${v}</label>`).join("")}</div></td></tr>`).join("")}</tbody></table></div>
+      <div class="row"><button class="btn primary" data-scale="baseline">Save as baseline</button><button class="btn" data-scale="weekly">Save as weekly</button></div>`;
+  } else $("scaleRun").innerHTML = "";
+  const hist = [...state.scales].sort((a,b)=>a.at.localeCompare(b.at));
+  $("scaleHistory").innerHTML = hist.length ? `<h3>Your scores</h3><p class="meta">${hist.map(h=>`<span>${esc(h.kind)} ${fmtTime(h.at)}: ${h.mean}</span>`).join("")}</p>` : "";
+  $("dataCounts").textContent = `${state.intentions.length} intentions · ${state.checkins.length} check-ins · ${state.episodes.length} stuck episodes (${state.episodes.filter(e=>e.followup).length} followed up) · ${state.scales.length} questionnaires`;
+}
+
+try { const t = localStorage.getItem("am-tab"); if (t && TABS.includes(t)) ui.tab = t; } catch {}
+document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab===ui.tab)));
+if (ui.tab === "decide") { ui.dec = newDecision(); buildEditor(); }
+boot();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use Agency Mirror, please cite it as below."
+title: "Agency Mirror: an open research instrument for the intention-action gap"
+authors:
+  - family-names: Dahiya
+    given-names: Dhruve
+version: 0.2.0
+date-released: 2026-10-11
+license: MIT
+repository-code: "https://github.com/YOUR-USERNAME/agency-mirror"

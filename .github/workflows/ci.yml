@@ -1,0 +1,31 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  math:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node --test
+
+  analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r analysis/requirements.txt
+      - run: python analysis/make_synthetic.py --out /tmp/syn
+      - run: >
+          python analysis/analyze.py
+          --episodes "/tmp/syn/SYNTHETIC-episodes-*.csv"
+          --intentions "/tmp/syn/SYNTHETIC-intentions-*.csv"
+          --out /tmp/out
+      - run: test -s /tmp/out/results.md && test -s /tmp/out/start_rate_by_condition.png
